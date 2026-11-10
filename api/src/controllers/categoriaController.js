@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
 
     if (!categorias) {
         return res.status(404).json({
-            erro: "Categorias não encontradas"
+            erro: "Lista de categorias não encontrada"
         });
     }
 
@@ -20,7 +20,7 @@ router.get('/:id', async (req, res) => {
 
     if (!categoriaEncontrada) {
         return res.status(404).json({
-            erro: "Categoria não encontradas"
+            erro: "Categoria não encontrada"
         });
     }
 

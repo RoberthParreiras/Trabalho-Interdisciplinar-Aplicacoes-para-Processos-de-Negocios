@@ -20,3 +20,14 @@ model Categoria {
 
   @@map("categorias")
 }
+
+model Fiado {
+  id              String   @id @default(uuid())
+  nome            String   
+  cpf             String   @unique
+  valor           Decimal
+  dataCriacao     DateTime @default(now()) @map("data_criacao")
+  dataModificacao DateTime @updatedAt @map("data_modificacao")
+
+  @@map("fiados")
+}
