@@ -58,6 +58,13 @@ npx prisma db push
 
 ```
 
+Após, execute o comando para gerar o novo prisma client com as informações do novo schema:
+
+```bash
+npx prisma generate
+
+```
+
 *(Nota: Se você estiver usando ativamente arquivos de migração para manter o histórico estrutural, use `npx prisma migrate dev` no lugar deste comando).*
 
 ## 5. Rodando a Aplicação
