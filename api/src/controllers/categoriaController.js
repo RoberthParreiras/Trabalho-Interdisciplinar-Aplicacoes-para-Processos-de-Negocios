@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
 
     if (!categorias) {
         return res.status(404).json({
-            erro: "Lista de categorias não encontrada"
+            mensagem: "Lista de categorias não encontrada"
         });
     }
 
@@ -20,7 +20,7 @@ router.get('/:id', async (req, res) => {
 
     if (!categoriaEncontrada) {
         return res.status(404).json({
-            erro: "Categoria não encontrada"
+            mensagem: "Categoria não encontrada"
         });
     }
 
@@ -47,7 +47,7 @@ router.put('/:id', async (req, res) => {
     
     if (!categoriaAlterada) {
         return res.status(404).json({
-            erro: "Categoria não encontrada"
+            mensagem: "Categoria não encontrada"
         });
     }
 
@@ -59,7 +59,7 @@ router.delete('/:id', async (req, res) => {
 
     if (!categoriaDeletada) {
         return res.status(404).json({
-            erro: "Categoria não encontrada"
+            mensagem: "Categoria não encontrada"
         });
     }
 

@@ -30,18 +30,19 @@ async function getFiado(id) {
 }
 
 async function criarFiado(fiado) {
-    const fiadoParsed = fiadoParse(fiado);
-
     try {
-        const fiado = await prisma.fiado.create({
+        const fiadoParsed = fiadoParse(fiado);
+        
+        const fiadoCriado = await prisma.fiado.create({
             data: {
-                nome: fiadoParsed
+                nome: fiadoParsed.nome,
+                cpf: fiadoParsed.cpf,
+                valor: fiadoParsed.valor
             }
         });
-
-        return fiado;
+        return fiadoCriado;
     } catch (e) {
-        throw "Error ao criar fiado";
+        throw `Error ao criar fiado: ${e}`;
     }
 }
 
@@ -54,7 +55,7 @@ async function alterarFiado(fiado) {
 
     if (!fiadoExiste) return null;
 
-    const categoriaParsed = fiadoParse(categoria);
+    // const fiadoParsed = fiadoParse(fiado);
 
     try {
 
@@ -63,7 +64,8 @@ async function alterarFiado(fiado) {
                 id: fiado.id
             },
             data: {
-                nome: categoriaParsed
+                nome: fiado.nome ? fiado.nome : fiadoExiste.nome,
+                valor: fiado.valor ? fiado.valor : fiadoExiste.valor
             }
         });
 

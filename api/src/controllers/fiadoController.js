@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
 
     if (!fiados) {
         return res.status(404).json({
-            erro: "Lista de fiados não encontrada"
+            mensagem: "Lista de fiados não encontrada"
         });
     }
 
@@ -20,7 +20,7 @@ router.get('/:id', async (req, res) => {
 
     if (!fiadoEncontrado) {
         return res.status(404).json({
-            erro: "Fiado não encontrado"
+            mensagem: "Fiado não encontrado"
         });
     }
 
@@ -50,7 +50,7 @@ router.put('/:id', async (req, res) => {
     
     if (!fiadoAlterado) {
         return res.status(404).json({
-            erro: "Fiado não encontrado"
+            mensagem: "Fiado não encontrado"
         });
     }
 
@@ -62,7 +62,7 @@ router.delete('/:id', async (req, res) => {
 
     if (!fiadoDeletado) {
         return res.status(404).json({
-            erro: "Fiado não encontrada"
+            mensagem: "Fiado não encontrado"
         });
     }
 
