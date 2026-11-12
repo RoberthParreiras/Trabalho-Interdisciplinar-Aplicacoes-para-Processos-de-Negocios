@@ -14,7 +14,7 @@ export default function Estoque() {
     return products.filter((item) => {
       const matchSearch =
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.code.toLowerCase().includes(searchTerm.toLowerCase());
+        item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCategory =
         selectedCategory === 'todas' || item.category === selectedCategory;
       return matchSearch && matchCategory;

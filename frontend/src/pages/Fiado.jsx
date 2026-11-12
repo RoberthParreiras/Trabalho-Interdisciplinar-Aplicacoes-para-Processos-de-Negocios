@@ -10,6 +10,17 @@ import { FiadoCard } from '../components/FiadoCard';
 import { INITIAL_FIADO } from '../data/mockFiado';
 
 export default function Fiado() {
+
+  async function getFiado() {
+    const data = await fetch("http://localhost:3000/fiados/");
+
+    if (!data.ok) return "Não foi possível carregar os fiados";
+
+    return await data.json();
+  }
+
+  console.log(getFiado());
+
   const [fiadoList, setFiadoList] = useState(INITIAL_FIADO);
   const [activeTab, setActiveTab] = useState('fiado');
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,8 +33,8 @@ export default function Fiado() {
   const filteredList = useMemo(() => {
     let list = fiadoList.filter((item) => {
       const matchSearch =
-        item.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.code.toLowerCase().includes(searchTerm.toLowerCase());
+        item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
       const matchStatus =
         statusFilter === 'todos' || item.status === statusFilter;
       return matchSearch && matchStatus;
@@ -34,7 +45,7 @@ export default function Fiado() {
     } else if (orderBy === 'valor') {
       list.sort((a, b) => b.totalDue - a.totalDue);
     } else if (orderBy === 'nome') {
-      list.sort((a, b) => a.clientName.localeCompare(b.clientName));
+      list.sort((a, b) => a.nome.localeCompare(b.nome));
     }
 
     return list;

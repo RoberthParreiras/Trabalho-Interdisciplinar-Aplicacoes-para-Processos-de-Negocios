@@ -45,15 +45,15 @@ export function FiadoCard({
           />
           <div>
             <h3 className="font-bold text-[#1F1712] text-lg font-mono leading-tight">
-              {item.clientName}
+              {item.nome}
             </h3>
             <p className="text-xs text-gray-500 font-mono mt-0.5">
-              ID: {item.code}
+              CPF: {item.cpf}
             </p>
           </div>
         </div>
 
-        <div>{renderStatusBadge(item.status)}</div>
+        {/* <div>{renderStatusBadge(item.status)}</div> */}
       </div>
 
       <div className="mt-3 pt-3 border-t border-[#F0E4D4] flex items-center justify-between">
@@ -71,9 +71,9 @@ export function FiadoCard({
             <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
               VENCIMENTO
             </span>
-            <span className="font-semibold text-gray-800 text-sm font-mono">
+            {/* <span className="font-semibold text-gray-800 text-sm font-mono">
               {item.dueDate}
-            </span>
+            </span> */}
           </div>
         </div>
 
