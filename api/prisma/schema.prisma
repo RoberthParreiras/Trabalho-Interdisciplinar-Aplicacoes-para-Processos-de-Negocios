@@ -31,3 +31,15 @@ model Fiado {
 
   @@map("fiados")
 }
+
+model ItemComanda {
+  id              String   @id @default(uuid())
+  idComanda       String   @map("id_comanda")
+  idCardapio      String   @map("id_cardapio")
+  quantidade      String
+  precoUnitario   Decimal  @map("preco_unitario")
+  dataCriacao     DateTime @default(now()) @map("data_criacao")
+  dataModificacao DateTime @updatedAt @map("data_modificacao")
+
+  @@map("itens_comanda")
+}
