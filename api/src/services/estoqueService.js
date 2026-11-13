@@ -1,5 +1,5 @@
 import prisma from "../infra/db/prisma.js";
-import { estoqueParse } from "../domain/estoqueDomain.js";
+import { estoqueParse, validarQuantidadeEstoque } from "../domain/estoqueDomain.js";
 
 async function listarEstoques() {
     try {
@@ -30,6 +30,7 @@ async function getEstoque(id) {
 }
 
 async function criarEstoque(estoque) {
+    validarQuantidadeEstoque(estoque.Quantidade);
     const estoqueParsed = estoqueParse(estoque);
 
     try {
@@ -48,6 +49,8 @@ async function criarEstoque(estoque) {
 }
 
 async function alterarEstoque(estoque) {
+    validarQuantidadeEstoque(estoque.Quantidade);
+
     const estoqueExiste = await prisma.estoque.findUnique({
         where: {
             id: estoque.id
