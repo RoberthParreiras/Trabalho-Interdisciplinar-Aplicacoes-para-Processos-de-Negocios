@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Bell,
   Search,
@@ -7,11 +7,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { FiadoCard } from '../components/FiadoCard';
-import { INITIAL_FIADO } from '../data/mockFiado';
 
 export default function Fiado() {
 
-  async function getFiado() {
+  async function getFiados() {
     const data = await fetch("http://localhost:3000/fiados/");
 
     if (!data.ok) return "Não foi possível carregar os fiados";
@@ -19,9 +18,42 @@ export default function Fiado() {
     return await data.json();
   }
 
-  console.log(getFiado());
+  async function criarFiado(novoFiado) {
+    const res = await fetch('http://localhost:3000/fiados/', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(novoFiado),
+    });
+    
+    const data = await res.json();
+    window.alert(data.mensagem)
+  }
 
-  const [fiadoList, setFiadoList] = useState(INITIAL_FIADO);
+  async function editarFiado(fiadoParaEditar) {
+    const res = await fetch(`http://localhost:3000/fiados/${fiadoParaEditar.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(fiadoParaEditar),
+    });
+    
+    const data = await res.json();
+    window.alert(data.mensagem)
+  }
+
+  async function deletarFiado(fiadoParaEditar) {
+    const res = await fetch(`http://localhost:3000/fiados/${fiadoParaEditar.id}`, {
+      method: "DELETE",
+    });
+    
+    const data = await res.json();
+    window.alert(data.mensagem)
+  }
+
+  const [fiadoList, setFiadoList] = useState();
   const [activeTab, setActiveTab] = useState('fiado');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
@@ -29,9 +61,24 @@ export default function Fiado() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    async function renderFiados() {
+
+      try {
+        const data = await getFiados();
+        setFiadoList(data);
+
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    renderFiados();
+  }, [criarFiado, editarFiado, deletarFiado]);
+
   // Filtros dinâmicos e ordenação
   const filteredList = useMemo(() => {
-    let list = fiadoList.filter((item) => {
+    let list = fiadoList?.filter((item) => {
       const matchSearch =
         item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
@@ -40,26 +87,26 @@ export default function Fiado() {
       return matchSearch && matchStatus;
     });
 
-    if (orderBy === 'vencimento') {
-      list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    } else if (orderBy === 'valor') {
-      list.sort((a, b) => b.totalDue - a.totalDue);
-    } else if (orderBy === 'nome') {
-      list.sort((a, b) => a.nome.localeCompare(b.nome));
-    }
+    // if (orderBy === 'vencimento') {
+    //   list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    // } else if (orderBy === 'valor') {
+    //   list.sort((a, b) => b.totalDue - a.totalDue);
+    // } else if (orderBy === 'nome') {
+    //   list.sort((a, b) => a.nome.localeCompare(b.nome));
+    // }
 
     return list;
   }, [fiadoList, searchTerm, statusFilter, orderBy]);
 
   const allSelected =
-    filteredList.length > 0 &&
-    filteredList.every((item) => selectedIds.includes(item.id));
+    filteredList?.length > 0 &&
+    filteredList?.every((item) => selectedIds.includes(item.id));
 
   const toggleSelectAll = () => {
     if (allSelected) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredList.map((item) => item.id));
+      setSelectedIds(filteredList?.map((item) => item.id));
     }
   };
 
@@ -69,43 +116,43 @@ export default function Fiado() {
     );
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (item) => {
     if (window.confirm('Deseja quitar ou remover este registro de fiado?')) {
-      setFiadoList((prev) => prev.filter((item) => item.id !== id));
-      setSelectedIds((prev) => prev.filter((item) => item !== id));
+      deletarFiado(item);
     }
   };
 
   const handleEdit = (item) => {
-    const newName = window.prompt('Editar nome do cliente:', item.clientName);
-    if (!newName) return;
-    const newTotal = parseFloat(
-      window.prompt('Total devido (R$):', item.totalDue.toString()) || item.totalDue
-    );
+    const novoNome = window.prompt('Editar nome do cliente:', item.nome);
+    if (!novoNome) return;
+    const novoValor = parseFloat(
+      window.prompt('Total devido (R$):', item.valor.toString()) || item.totalDue
+    );    
+    
+    const fiadoParaEditar = {
+      id: item.id,
+      nome: novoNome,
+      valor: novoValor
+    }
 
-    setFiadoList((prev) =>
-      prev.map((it) =>
-        it.id === item.id ? { ...it, clientName: newName, totalDue: newTotal } : it
-      )
-    );
+    editarFiado(fiadoParaEditar);
   };
 
   const handleAddClient = () => {
-    const clientName = window.prompt('Nome do cliente:');
-    if (!clientName) return;
-    const totalDue = parseFloat(window.prompt('Total devido (ex: 160.00):') || '0');
-    const dueDate = window.prompt('Data de vencimento (ex: 10/11):') || '10/11';
+    const nome = window.prompt('Nome do cliente:');
+    if (!nome) return;
+    const cpf = window.prompt('Digite o cpf do cliente:');
+    if (!cpf) return;
+    const valor = window.prompt('Digite o valor:');
+    if (!valor) return;
 
-    const newItem = {
-      id: Date.now().toString(),
-      code: `#00${Math.floor(100 + Math.random() * 900)}`,
-      clientName,
-      totalDue: totalDue || 0,
-      dueDate,
-      status: 'pendente',
+    const novoFiado = {
+      nome,
+      cpf,
+      valor,
     };
 
-    setFiadoList((prev) => [newItem, ...prev]);
+    criarFiado(novoFiado);
   };
 
   const topTabs = [
@@ -145,7 +192,7 @@ export default function Fiado() {
 
       {/* ABAS RÁPIDAS */}
       <div className="bg-[#EADCC8] px-3 py-2 flex items-center gap-2 overflow-x-auto border-b border-[#D8C7B0] no-scrollbar">
-        {topTabs.map((tab) => (
+        {topTabs?.map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -259,13 +306,13 @@ export default function Fiado() {
             <span>Selecionar todos</span>
           </label>
           <span className="font-semibold text-gray-600">
-            Exibindo {filteredList.length} de 2.948
+            Exibindo {filteredList?.length} de 2.948
           </span>
         </div>
 
         {/* LISTA */}
         <div className="flex flex-col gap-3">
-          {filteredList.map((item) => (
+          {filteredList?.map((item) => (
             <FiadoCard
               key={item.id}
               item={item}
@@ -276,7 +323,7 @@ export default function Fiado() {
             />
           ))}
 
-          {filteredList.length === 0 && (
+          {filteredList?.length === 0 && (
             <div className="text-center py-10 text-gray-500 text-sm">
               Nenhum cliente encontrado com os filtros selecionados.
             </div>

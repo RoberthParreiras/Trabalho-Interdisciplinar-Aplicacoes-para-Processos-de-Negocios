@@ -1,72 +1,84 @@
 import express from "express";
-import { listarFiados, getFiado, criarFiado, alterarFiado, deletarFiado } from "../services/fiadoService.js";
+import {
+  listarFiados,
+  getFiado,
+  criarFiado,
+  alterarFiado,
+  deletarFiado,
+} from "../services/fiadoService.js";
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-    const fiados = await listarFiados();
+router.get("/", async (req, res) => {
+  const fiados = await listarFiados();
 
-    if (!fiados) {
-        return res.status(404).json({
-            mensagem: "Lista de fiados não encontrada"
-        });
-    }
+  if (!fiados) {
+    return res.status(404).json({
+      mensagem: "Lista de fiados não encontrada",
+    });
+  }
 
-    res.json(fiados);
+  res.json(fiados);
 });
 
-router.get('/:id', async (req, res) => {
-    const fiadoEncontrado = await getFiado(req.params.id);
+router.get("/:id", async (req, res) => {
+  const fiadoEncontrado = await getFiado(req.params.id);
 
-    if (!fiadoEncontrado) {
-        return res.status(404).json({
-            mensagem: "Fiado não encontrado"
-        });
-    }
+  if (!fiadoEncontrado) {
+    return res.status(404).json({
+      mensagem: "Fiado não encontrado",
+    });
+  }
 
-    res.json(fiadoEncontrado);
+  res.json(fiadoEncontrado);
 });
 
-router.post('/', async (req, res) => {
-    const fiado = {
-        nome: req.body.nome,
-        cpf: req.body.cpf,
-        valor: req.body.valor
-    }
+router.post("/", async (req, res) => {
+  const fiado = {
+    nome: req.body.nome,
+    cpf: req.body.cpf,
+    valor: req.body.valor,
+  };
 
-    const fiadoCriado = await criarFiado(fiado);
+  const fiadoCriado = await criarFiado(fiado);
 
-    res.status(201).json(fiadoCriado);
+  res.status(201).json({
+    fiadoCriado,
+    mensagem: "Fiado criado com sucesso",
+  });
 });
 
-router.put('/:id', async (req, res) => {
-    const fiado = {
-        id: req.params.id,
-        nome: req.body.nome,
-        valor: req.body.valor
-    }
+router.put("/:id", async (req, res) => {
+  const fiado = {
+    id: req.params.id,
+    nome: req.body.nome,
+    valor: req.body.valor,
+  };
 
-    const fiadoAlterado = await alterarFiado(fiado);
-    
-    if (!fiadoAlterado) {
-        return res.status(404).json({
-            mensagem: "Fiado não encontrado"
-        });
-    }
+  const fiadoAlterado = await alterarFiado(fiado);
 
-    res.json(fiadoAlterado);
+  if (!fiadoAlterado) {
+    return res.status(404).json({
+      mensagem: "Fiado não encontrado",
+    });
+  }
+
+  res.json({
+    fiadoAlterado,
+    mensagem: "Fiado alterado com sucesso",
+  });
 });
 
-router.delete('/:id', async (req, res) => {
-    const fiadoDeletado = await deletarFiado(req.params.id);
+router.delete("/:id", async (req, res) => {
+  const fiadoDeletado = await deletarFiado(req.params.id);
 
-    if (!fiadoDeletado) {
-        return res.status(404).json({
-            mensagem: "Fiado não encontrado"
-        });
-    }
+  if (!fiadoDeletado) {
+    return res.status(404).json({
+      mensagem: "Fiado não encontrado",
+    });
+  }
 
-    res.json({mensagem: "Fiado removido com sucesso"});
+  res.json({ mensagem: "Fiado removido com sucesso" });
 });
 
 export default router;

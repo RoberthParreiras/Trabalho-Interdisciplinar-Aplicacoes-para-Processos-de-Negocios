@@ -63,7 +63,7 @@ export function FiadoCard({
               TOTAL DEVIDO
             </span>
             <span className="font-bold text-[#1F1712] text-base font-mono">
-              R$ {Number(item.totalDue).toFixed(2).replace('.', ',')}
+              R$ {Number(item.valor).toFixed(2).replace('.', ',')}
             </span>
           </div>
 
@@ -88,7 +88,7 @@ export function FiadoCard({
           </button>
           <button
             type="button"
-            onClick={() => onDelete(item.id)}
+            onClick={() => onDelete(item)}
             className="p-1.5 hover:bg-red-100 hover:text-red-700 rounded-md transition"
             title="Excluir ou quitar fiado"
           >

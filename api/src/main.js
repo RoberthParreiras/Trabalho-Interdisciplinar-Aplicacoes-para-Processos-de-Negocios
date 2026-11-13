@@ -7,13 +7,15 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({
-    origin: 'http://localhost:5173'
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.use("/categorias", categoriaRouter);
 app.use("/fiados", fiadoRouter);
 
 app.listen(3000, () => {
-    console.log("Server running");
+  console.log("Server running");
 });
