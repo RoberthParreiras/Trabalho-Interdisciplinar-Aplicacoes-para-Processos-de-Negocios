@@ -20,3 +20,14 @@ model Categoria {
 
   @@map("categorias")
 }
+
+model Estoque {
+  id              String   @id @default(uuid())
+  nome            String   
+  id_categoria    Number   @unique
+  Quantidade      Number
+  dataCriacao     DateTime @default(now()) @map("data_criacao")
+  dataModificacao DateTime @updatedAt @map("data_modificacao")
+
+  @@map("estoque")
+}
