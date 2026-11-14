@@ -42,3 +42,14 @@ model Cardapio {
 
   @@map("cardapios")
 }
+
+model Usuario {
+  id              String   @id @default(uuid())
+  nome            String
+  usuario         String   @unique
+  senha           String
+  dataCriacao     DateTime @default(now()) @map("data_criacao")
+  dataModificacao DateTime @updatedAt @map("data_modificacao")
+
+  @@map("usuarios")
+}
