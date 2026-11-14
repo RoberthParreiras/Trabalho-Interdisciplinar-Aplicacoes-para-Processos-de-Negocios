@@ -37,12 +37,12 @@ export function FiadoCard({
     <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <input
+          {/* <input
             type="checkbox"
             checked={selected}
             onChange={() => onToggleSelect(item.id)}
             className="w-5 h-5 rounded border-[#3B2314] accent-[#C85327] cursor-pointer"
-          />
+          /> */}
           <div>
             <h3 className="font-bold text-[#1F1712] text-lg font-mono leading-tight">
               {item.nome}

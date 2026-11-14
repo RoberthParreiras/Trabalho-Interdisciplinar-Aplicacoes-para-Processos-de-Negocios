@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Search, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { ProductCard } from '../components/ProductCard';
+import { EstoqueCard } from '../components/EstoqueCard';
 import { INITIAL_PRODUCTS } from '../data/mockProducts';
 
 export default function Estoque() {
@@ -121,7 +121,7 @@ export default function Estoque() {
 
       <div className="flex flex-col gap-3">
         {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} selected={selectedIds.includes(product.id)} onToggleSelect={toggleSelectOne} onEdit={handleEdit} onDelete={handleDelete} />
+          <EstoqueCard key={product.id} product={product} selected={selectedIds.includes(product.id)} onToggleSelect={toggleSelectOne} onEdit={handleEdit} onDelete={handleDelete} />
         ))}
         {filteredProducts.length === 0 && (
           <div className="text-center py-10 text-gray-500 text-sm">Nenhum produto encontrado.</div>

@@ -77,15 +77,15 @@ export default function Fiado() {
   }, [criarFiado, editarFiado, deletarFiado]);
 
   // Filtros dinâmicos e ordenação
-  const filteredList = useMemo(() => {
-    let list = fiadoList?.filter((item) => {
-      const matchSearch =
-        item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus =
-        statusFilter === 'todos' || item.status === statusFilter;
-      return matchSearch && matchStatus;
-    });
+  // const filteredList = useMemo(() => {
+  //   let list = fiadoList?.filter((item) => {
+  //     const matchSearch =
+  //       item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
+  //     const matchStatus =
+  //       statusFilter === 'todos' || item.status === statusFilter;
+  //     return matchSearch && matchStatus;
+  //   });
 
     // if (orderBy === 'vencimento') {
     //   list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
@@ -95,20 +95,20 @@ export default function Fiado() {
     //   list.sort((a, b) => a.nome.localeCompare(b.nome));
     // }
 
-    return list;
-  }, [fiadoList, searchTerm, statusFilter, orderBy]);
+  //   return list;
+  // }, [fiadoList, searchTerm, statusFilter, orderBy]);
 
-  const allSelected =
-    filteredList?.length > 0 &&
-    filteredList?.every((item) => selectedIds.includes(item.id));
+  // const allSelected =
+  //   filteredList?.length > 0 &&
+  //   filteredList?.every((item) => selectedIds.includes(item.id));
 
-  const toggleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredList?.map((item) => item.id));
-    }
-  };
+  // const toggleSelectAll = () => {
+  //   if (allSelected) {
+  //     setSelectedIds([]);
+  //   } else {
+  //     setSelectedIds(filteredList?.map((item) => item.id));
+  //   }
+  // };
 
   const toggleSelectOne = (id) => {
     setSelectedIds((prev) =>
@@ -155,13 +155,13 @@ export default function Fiado() {
     criarFiado(novoFiado);
   };
 
-  const topTabs = [
-    { id: 'estoque', label: 'Gestão Estoque' },
-    { id: 'pedidos', label: 'Pedidos' },
-    { id: 'usuarios', label: 'Controle Usuários' },
-    { id: 'fiado', label: 'Controle Fiado' },
-    { id: 'cardapio', label: 'Controle Cardápio' },
-  ];
+  // const topTabs = [
+  //   { id: 'estoque', label: 'Gestão Estoque' },
+  //   { id: 'pedidos', label: 'Pedidos' },
+  //   { id: 'usuarios', label: 'Controle Usuários' },
+  //   { id: 'fiado', label: 'Controle Fiado' },
+  //   { id: 'cardapio', label: 'Controle Cardápio' },
+  // ];
 
   return (
     <div className="min-h-screen bg-[#F5EBD7] text-[#2A1A0F] flex flex-col font-sans pb-24">
@@ -191,7 +191,7 @@ export default function Fiado() {
       </header> */}
 
       {/* ABAS RÁPIDAS */}
-      <div className="bg-[#EADCC8] px-3 py-2 flex items-center gap-2 overflow-x-auto border-b border-[#D8C7B0] no-scrollbar">
+      {/* <div className="bg-[#EADCC8] px-3 py-2 flex items-center gap-2 overflow-x-auto border-b border-[#D8C7B0] no-scrollbar">
         {topTabs?.map((tab) => (
           <button
             key={tab.id}
@@ -206,7 +206,7 @@ export default function Fiado() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </div> */}
 
       {/* CONTEÚDO */}
       <main className="p-4 max-w-lg mx-auto w-full flex-1 flex flex-col gap-4">
@@ -217,9 +217,9 @@ export default function Fiado() {
               <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
                 Controle Fiado
               </h1>
-              <span className="text-sm font-semibold text-gray-600 font-mono">
+              {/* <span className="text-sm font-semibold text-gray-600 font-mono">
                 / (2948)
-              </span>
+              </span> */}
             </div>
             <p className="text-xs text-gray-600 mt-0.5">
               Gestão de contas e recebimentos
@@ -232,12 +232,12 @@ export default function Fiado() {
             className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-4 py-2 rounded-xl text-xs flex flex-col items-center justify-center leading-tight shadow transition active:scale-95 whitespace-nowrap"
           >
             <span>Adicionar</span>
-            <span>Cliente</span>
+            <span>Fiado</span>
           </button>
         </div>
 
         {/* FILTROS E BUSCA */}
-        <div className="bg-[#EADCC8] p-3 rounded-2xl border border-[#D8C7B0] flex flex-col gap-3">
+        {/* <div className="bg-[#EADCC8] p-3 rounded-2xl border border-[#D8C7B0] flex flex-col gap-3">
           <div className="relative">
             <span className="absolute -top-2.5 left-3 bg-[#EADCC8] px-1.5 text-xs font-mono font-medium text-[#4A3525]">
               procure
@@ -292,10 +292,10 @@ export default function Fiado() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* SELEÇÃO EM MASSA */}
-        <div className="bg-[#EADCC8] px-3 py-2 rounded-xl flex items-center justify-between text-xs font-mono font-bold text-[#3B2314] border border-[#D8C7B0]">
+        {/* <div className="bg-[#EADCC8] px-3 py-2 rounded-xl flex items-center justify-between text-xs font-mono font-bold text-[#3B2314] border border-[#D8C7B0]">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -308,30 +308,30 @@ export default function Fiado() {
           <span className="font-semibold text-gray-600">
             Exibindo {filteredList?.length} de 2.948
           </span>
-        </div>
+        </div> */}
 
         {/* LISTA */}
         <div className="flex flex-col gap-3">
-          {filteredList?.map((item) => (
+          {fiadoList?.map((item) => (
             <FiadoCard
               key={item.id}
               item={item}
               selected={selectedIds.includes(item.id)}
-              onToggleSelect={toggleSelectOne}
+              // onToggleSelect={toggleSelectOne}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
           ))}
 
-          {filteredList?.length === 0 && (
+          {/* {filteredList?.length === 0 && (
             <div className="text-center py-10 text-gray-500 text-sm">
               Nenhum cliente encontrado com os filtros selecionados.
             </div>
-          )}
+          )} */}
         </div>
 
         {/* PAGINAÇÃO */}
-        <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
+        {/* <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -361,7 +361,7 @@ export default function Fiado() {
           >
             <ChevronRight size={16} />
           </button>
-        </div>
+        </div> */}
       </main>
     </div>
   );

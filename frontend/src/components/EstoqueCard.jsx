@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 
-export function ProductCard({
+export function EstoqueCard({
   product,
   selected,
   onToggleSelect,
@@ -12,12 +12,12 @@ export function ProductCard({
     <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <input
+          {/* <input
             type="checkbox"
             checked={selected}
             onChange={() => onToggleSelect(product.id)}
             className="mt-1 w-5 h-5 rounded border-[#3B2314] accent-[#C85327] cursor-pointer"
-          />
+          /> */}
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-[#1F1712] text-lg leading-tight capitalize">
