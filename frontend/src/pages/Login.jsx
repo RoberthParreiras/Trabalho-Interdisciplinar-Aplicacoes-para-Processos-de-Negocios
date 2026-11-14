@@ -1,7 +1,50 @@
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const navigate = useNavigate();
+
+  const [usuario, setUsuario] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+
+    setErro('');
+    setCarregando(true);
+
+    try {
+      const resposta = await fetch('http://localhost:3000/usuarios/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          usuario,
+          senha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setErro(dados.mensagem || 'Usuário ou senha inválidos.');
+        return;
+      }
+
+      // Login realizado com sucesso
+      navigate('/estoque');
+
+    } catch (error) {
+      console.error('Erro ao realizar login:', error);
+      setErro('Não foi possível conectar ao servidor.');
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
     <main className="min-h-screen w-full bg-[#F5EAD2] flex flex-col items-center overflow-hidden">
@@ -19,31 +62,42 @@ export default function Login() {
 
       {/* FORMULÁRIO */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          navigate('/estoque');
-        }}
+        onSubmit={handleLogin}
         className="w-[min(490px,85vw)] mt-[12vh] flex flex-col gap-6"
       >
         <input
           type="text"
           placeholder="Usuário"
+          value={usuario}
+          onChange={(e) => setUsuario(e.target.value)}
           required
+          disabled={carregando}
           className="w-full h-[75px] rounded-[22px] bg-white border-2 border-[#C95B22] px-6 text-2xl text-gray-800 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-[#C95B22]"
         />
 
         <input
           type="password"
           placeholder="Senha"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
           required
+          disabled={carregando}
           className="w-full h-[75px] rounded-[22px] bg-white border-2 border-[#C95B22] px-6 text-2xl text-gray-800 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-[#C95B22]"
         />
 
+        {/* MENSAGEM DE ERRO */}
+        {erro && (
+          <p className="text-red-600 text-center font-medium">
+            {erro}
+          </p>
+        )}
+
         <button
           type="submit"
-          className="w-full min-h-[85px] mt-4 rounded-[28px] bg-[#C95B22] text-white font-mono text-3xl tracking-wide hover:bg-[#BB501A] active:scale-[0.99] transition duration-150"
+          disabled={carregando}
+          className="w-full min-h-[85px] mt-4 rounded-[28px] bg-[#C95B22] text-white font-mono text-3xl tracking-wide hover:bg-[#BB501A] active:scale-[0.99] transition duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Logar
+          {carregando ? 'Entrando...' : 'Logar'}
         </button>
 
         <button
