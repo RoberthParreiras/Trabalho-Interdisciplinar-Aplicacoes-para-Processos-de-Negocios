@@ -31,3 +31,14 @@ model Fiado {
 
   @@map("fiados")
 }
+
+model Cardapio {
+  id              String   @id @default(uuid())
+  nome            String
+  preco           Decimal
+  dataCriacao     DateTime @default(now()) @map("data_criacao")
+  dataModificacao DateTime @updatedAt @map("data_modificacao")
+  disponivel      Boolean  @default(true)
+
+  @@map("cardapios")
+}
