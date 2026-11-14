@@ -1,9 +1,18 @@
 import prisma from "../infra/db/prisma.js";
+import bcrypt from "bcrypt";
 import { usuarioParse } from "../domain/usuarioDomain.js";
 
 async function listarUsuarios() {
     try {
-        return await prisma.usuario.findMany();
+        return await prisma.usuario.findMany({
+            select: {
+                id: true,
+                nome: true,
+                usuario: true,
+                dataCriacao: true,
+                dataModificacao: true
+            }
+        });
     } catch (e) {
         throw "Erro ao listar usuários";
     }
@@ -25,14 +34,23 @@ async function buscarUsuario(id) {
 
 async function criarUsuario(usuario) {
     try {
-        // Valida e trata os dados recebidos
         const usuarioParsed = usuarioParse(usuario);
+
+        // Gera o hash da senha
+        const senhaHash = await bcrypt.hash(usuarioParsed.senha, 10);
 
         const usuarioCriado = await prisma.usuario.create({
             data: {
                 nome: usuarioParsed.nome,
                 usuario: usuarioParsed.usuario,
-                senha: usuarioParsed.senha
+                senha: senhaHash
+            },
+            select: {
+                id: true,
+                nome: true,
+                usuario: true,
+                dataCriacao: true,
+                dataModificacao: true
             }
         });
 
@@ -54,11 +72,21 @@ async function loginUsuario(usuario, senha) {
             return null;
         }
 
-        if (usuarioEncontrado.senha !== senha) {
+        // Compara a senha digitada com o hash do banco
+        const senhaValida = await bcrypt.compare(
+            senha,
+            usuarioEncontrado.senha
+        );
+
+        if (!senhaValida) {
             return null;
         }
 
-        return usuarioEncontrado;
+        // Não retorna o hash da senha
+        const { senha: _, ...usuarioSemSenha } = usuarioEncontrado;
+
+        return usuarioSemSenha;
+
     } catch (e) {
         throw "Erro ao realizar login";
     }
