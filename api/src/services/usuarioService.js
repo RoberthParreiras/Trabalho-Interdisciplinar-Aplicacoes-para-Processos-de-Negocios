@@ -1,4 +1,5 @@
 import prisma from "../infra/db/prisma.js";
+import { usuarioParse } from "../domain/usuarioDomain.js";
 
 async function listarUsuarios() {
     try {
@@ -24,11 +25,14 @@ async function buscarUsuario(id) {
 
 async function criarUsuario(usuario) {
     try {
+        // Valida e trata os dados recebidos
+        const usuarioParsed = usuarioParse(usuario);
+
         const usuarioCriado = await prisma.usuario.create({
             data: {
-                nome: usuario.nome,
-                usuario: usuario.usuario,
-                senha: usuario.senha
+                nome: usuarioParsed.nome,
+                usuario: usuarioParsed.usuario,
+                senha: usuarioParsed.senha
             }
         });
 
