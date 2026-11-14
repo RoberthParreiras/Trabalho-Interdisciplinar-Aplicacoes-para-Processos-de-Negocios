@@ -1,15 +1,14 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Bell,
   Search,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { FiadoCard } from '../components/FiadoCard';
+} from "lucide-react";
+import { FiadoCard } from "../components/FiadoCard";
 
 export default function Fiado() {
-
   async function getFiados() {
     const data = await fetch("http://localhost:3000/fiados/");
 
@@ -19,57 +18,61 @@ export default function Fiado() {
   }
 
   async function criarFiado(novoFiado) {
-    const res = await fetch('http://localhost:3000/fiados/', {
+    const res = await fetch("http://localhost:3000/fiados/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(novoFiado),
     });
-    
+
     const data = await res.json();
-    window.alert(data.mensagem)
+    window.alert(data.mensagem);
   }
 
   async function editarFiado(fiadoParaEditar) {
-    const res = await fetch(`http://localhost:3000/fiados/${fiadoParaEditar.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
+    const res = await fetch(
+      `http://localhost:3000/fiados/${fiadoParaEditar.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fiadoParaEditar),
       },
-      body: JSON.stringify(fiadoParaEditar),
-    });
-    
+    );
+
     const data = await res.json();
-    window.alert(data.mensagem)
+    window.alert(data.mensagem);
   }
 
-  async function deletarFiado(fiadoParaEditar) {
-    const res = await fetch(`http://localhost:3000/fiados/${fiadoParaEditar.id}`, {
-      method: "DELETE",
-    });
-    
+  async function deletarFiado(fiadoParaDeletar) {
+    const res = await fetch(
+      `http://localhost:3000/fiados/${fiadoParaDeletar.id}`,
+      {
+        method: "DELETE",
+      },
+    );
+
     const data = await res.json();
-    window.alert(data.mensagem)
+    window.alert(data.mensagem);
   }
 
   const [fiadoList, setFiadoList] = useState();
-  const [activeTab, setActiveTab] = useState('fiado');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [orderBy, setOrderBy] = useState('vencimento');
+  const [activeTab, setActiveTab] = useState("fiado");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [orderBy, setOrderBy] = useState("vencimento");
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     async function renderFiados() {
-
       try {
         const data = await getFiados();
         setFiadoList(data);
-
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
     }
 
@@ -87,13 +90,13 @@ export default function Fiado() {
   //     return matchSearch && matchStatus;
   //   });
 
-    // if (orderBy === 'vencimento') {
-    //   list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    // } else if (orderBy === 'valor') {
-    //   list.sort((a, b) => b.totalDue - a.totalDue);
-    // } else if (orderBy === 'nome') {
-    //   list.sort((a, b) => a.nome.localeCompare(b.nome));
-    // }
+  // if (orderBy === 'vencimento') {
+  //   list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  // } else if (orderBy === 'valor') {
+  //   list.sort((a, b) => b.totalDue - a.totalDue);
+  // } else if (orderBy === 'nome') {
+  //   list.sort((a, b) => a.nome.localeCompare(b.nome));
+  // }
 
   //   return list;
   // }, [fiadoList, searchTerm, statusFilter, orderBy]);
@@ -110,40 +113,41 @@ export default function Fiado() {
   //   }
   // };
 
-  const toggleSelectOne = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  // const toggleSelectOne = (id) => {
+  //   setSelectedIds((prev) =>
+  //     prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+  //   );
+  // };
 
   const handleDelete = (item) => {
-    if (window.confirm('Deseja quitar ou remover este registro de fiado?')) {
+    if (window.confirm("Deseja remover este registro de fiado?")) {
       deletarFiado(item);
     }
   };
 
   const handleEdit = (item) => {
-    const novoNome = window.prompt('Editar nome do cliente:', item.nome);
+    const novoNome = window.prompt("Editar nome do cliente:", item.nome);
     if (!novoNome) return;
     const novoValor = parseFloat(
-      window.prompt('Total devido (R$):', item.valor.toString()) || item.totalDue
-    );    
-    
+      window.prompt("Total devido (R$):", item.valor.toString()) ||
+        item.totalDue,
+    );
+
     const fiadoParaEditar = {
       id: item.id,
       nome: novoNome,
-      valor: novoValor
-    }
+      valor: novoValor,
+    };
 
     editarFiado(fiadoParaEditar);
   };
 
   const handleAddClient = () => {
-    const nome = window.prompt('Nome do cliente:');
+    const nome = window.prompt("Nome do cliente:");
     if (!nome) return;
-    const cpf = window.prompt('Digite o cpf do cliente:');
+    const cpf = window.prompt("Digite o cpf do cliente:");
     if (!cpf) return;
-    const valor = window.prompt('Digite o valor:');
+    const valor = window.prompt("Digite o valor:");
     if (!valor) return;
 
     const novoFiado = {
@@ -164,7 +168,7 @@ export default function Fiado() {
   // ];
 
   return (
-    <div className="min-h-screen bg-[#F5EBD7] text-[#2A1A0F] flex flex-col font-sans pb-24">
+    <div className="p-4 flex flex-col gap-4">
       {/* HEADER SUPERIOR */}
       {/* <header className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="leading-none">
@@ -209,17 +213,16 @@ export default function Fiado() {
       </div> */}
 
       {/* CONTEÚDO */}
-      <main className="p-4 max-w-lg mx-auto w-full flex-1 flex flex-col gap-4">
         {/* TÍTULO E BOTÃO ADICIONAR */}
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <div>
             <div className="flex items-baseline gap-2">
               <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
                 Controle Fiado
               </h1>
-              {/* <span className="text-sm font-semibold text-gray-600 font-mono">
-                / (2948)
-              </span> */}
+              <span className="text-sm font-semibold text-gray-600">
+                / ({fiadoList?.length})
+              </span>
             </div>
             <p className="text-xs text-gray-600 mt-0.5">
               Gestão de contas e recebimentos
@@ -362,7 +365,6 @@ export default function Fiado() {
             <ChevronRight size={16} />
           </button>
         </div> */}
-      </main>
     </div>
   );
 }

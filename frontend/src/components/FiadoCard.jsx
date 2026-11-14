@@ -68,9 +68,9 @@ export function FiadoCard({
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
+            {/* <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
               VENCIMENTO
-            </span>
+            </span> */}
             {/* <span className="font-semibold text-gray-800 text-sm font-mono">
               {item.dueDate}
             </span> */}

@@ -41,7 +41,7 @@ async function criarCategoria(categoria) {
 
         return categoria;
     } catch (e) {
-        throw "Error ao criar categoria";
+        throw `Error ao criar categoria ${e}`;
     }
 }
 

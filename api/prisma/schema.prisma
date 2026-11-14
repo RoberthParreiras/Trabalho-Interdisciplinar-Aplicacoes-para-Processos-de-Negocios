@@ -17,6 +17,7 @@ model Categoria {
   nome            String   @unique
   dataCriacao     DateTime @default(now()) @map("data_criacao")
   dataModificacao DateTime @updatedAt @map("data_modificacao")
+  estoque         Estoque[]
 
   @@map("categorias")
 }
@@ -30,4 +31,17 @@ model Fiado {
   dataModificacao DateTime @updatedAt @map("data_modificacao")
 
   @@map("fiados")
+}
+
+model Estoque {
+  id              String     @id @default(uuid())
+  nome            String   
+  idCategoria     String     @map("id_categoria")
+  categoria       Categoria  @relation(fields: [idCategoria], references: [id])
+  quantidade      Int
+  estoqueMinimo   Int        @map("estoque_minimo")
+  dataCriacao     DateTime   @default(now()) @map("data_criacao")
+  dataModificacao DateTime   @updatedAt @map("data_modificacao")
+
+  @@map("estoques")
 }

@@ -15,10 +15,10 @@ export function MainLayout() {
             <span className="text-xl font-black tracking-tight text-[#E67E22] drop-shadow-sm">MAGAIVER</span>
           </div>
         </div>
-        <button className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 shadow transition">
+        {/* <button className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 shadow transition">
           <Plus size={18} strokeWidth={2.5} />
           <span>adicionar</span>
-        </button>
+        </button> */}
       </header>
 
       {/* DYNAMIC PAGE CONTENT INJECTED HERE */}
@@ -38,7 +38,7 @@ export function MainLayout() {
           <span>Estoque</span>
         </NavLink>
         
-        <NavLink
+        {/* <NavLink
           to="/pedidos"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
@@ -46,9 +46,9 @@ export function MainLayout() {
         >
           <ClipboardList size={20} />
           <span>Pedidos</span>
-        </NavLink>
+        </NavLink> */}
         
-        <NavLink
+        {/* <NavLink
           to="/usuarios"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
@@ -56,7 +56,7 @@ export function MainLayout() {
         >
           <Users size={20} />
           <span>Usuários</span>
-        </NavLink>
+        </NavLink> */}
         
         <NavLink
           to="/fiado"
@@ -74,7 +74,7 @@ export function MainLayout() {
           )}
         </NavLink>
 
-        <NavLink
+        {/* <NavLink
           to="/cardapio"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
@@ -82,7 +82,7 @@ export function MainLayout() {
         >
           <BookOpen size={20} />
           <span>Cardápio</span>
-        </NavLink>
+        </NavLink> */}
       </footer>
     </div>
   );
