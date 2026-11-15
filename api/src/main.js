@@ -4,6 +4,7 @@ import categoriaRouter from "./controllers/categoriaController.js";
 import fiadoRouter from "./controllers/fiadoController.js";
 import estoqueRouter from "./controllers/estoqueController.js";
 import usuarioRouter from "./controllers/usuarioController.js";
+import itemComandaRouter from "./controllers/itemComandaController.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use("/categorias", categoriaRouter);
 app.use("/fiados", fiadoRouter);
 app.use("/estoques", estoqueRouter);
 app.use("/usuarios", usuarioRouter);
+app.use("/itens-comanda", itemComandaRouter);
 
 app.listen(3000, () => {
   console.log("Server running");
