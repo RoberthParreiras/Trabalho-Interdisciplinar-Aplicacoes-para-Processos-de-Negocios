@@ -77,7 +77,7 @@ export default function Fiado() {
     }
 
     renderFiados();
-  }, [criarFiado, editarFiado, deletarFiado]);
+  }, []);
 
   // Filtros dinâmicos e ordenação
   // const filteredList = useMemo(() => {
@@ -122,6 +122,8 @@ export default function Fiado() {
   const handleDelete = (item) => {
     if (window.confirm("Deseja remover este registro de fiado?")) {
       deletarFiado(item);
+
+      window.location.reload();
     }
   };
 
@@ -140,6 +142,8 @@ export default function Fiado() {
     };
 
     editarFiado(fiadoParaEditar);
+
+    window.location.reload();
   };
 
   const handleAddClient = () => {
@@ -157,6 +161,8 @@ export default function Fiado() {
     };
 
     criarFiado(novoFiado);
+
+    window.location.reload();
   };
 
   // const topTabs = [

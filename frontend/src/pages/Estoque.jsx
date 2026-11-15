@@ -7,7 +7,6 @@ import {
   Plus,
 } from "lucide-react";
 import { EstoqueCard } from "../components/EstoqueCard";
-import { INITIAL_PRODUCTS } from "../data/mockProducts";
 
 export default function Estoque() {
   async function getEstoques() {
@@ -90,7 +89,7 @@ export default function Estoque() {
     }
 
     renderEstoques();
-  }, [criarEstoque, editarEstoque, deletarEstoque]);
+  }, []);
 
   // const filteredProducts = useMemo(() => {
   //   return products.filter((item) => {
@@ -121,6 +120,8 @@ export default function Estoque() {
   const handleDelete = (item) => {
     if (window.confirm("Deseja remover este registro de estoque?")) {
       deletarEstoque(item);
+
+      window.location.reload();
     }
   };
 
@@ -149,6 +150,8 @@ export default function Estoque() {
     };
 
     editarEstoque(estoqueParaEditar);
+
+    window.location.reload();
   };
 
   const handleAddProduct = () => {
@@ -169,6 +172,8 @@ export default function Estoque() {
     };
 
     criarEstoque(novoEstoque);
+
+    window.location.reload();
   };
 
   return (
