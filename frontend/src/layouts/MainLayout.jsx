@@ -29,7 +29,7 @@ export function MainLayout() {
       {/* FOOTER NAVIGATION */}
       <footer className="fixed bottom-0 left-0 right-0 bg-[#2E1A0F] text-[#EADCC8] py-2 px-6 flex items-center justify-around border-t border-[#4A2D19] z-30 shadow-lg">
         <NavLink
-          to="/"
+          to="/estoque"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
           }`}
