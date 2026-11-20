@@ -6,6 +6,7 @@ import Estoque from "./pages/Estoque";
 import Fiado from "./pages/Fiado";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Usuarios from './pages/Usuarios';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route element={<RotaProtegida />}>
             <Route element={<MainLayout />}>
               <Route path="/estoques" element={<Estoque />} />
+              <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/fiados" element={<Fiado />} />
             </Route>
           </Route>

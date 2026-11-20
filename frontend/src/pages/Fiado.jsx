@@ -1,240 +1,278 @@
-import React, { useState, useMemo, useEffect } from "react";
-import {
-  Bell,
-  Search,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { Plus, X } from "lucide-react";
 import { FiadoCard } from "../components/FiadoCard";
 
+const API_URL = "http://localhost:3000/fiados";
+
+const formularioInicial = {
+  nome: "",
+  cpf: "",
+  valor: "",
+};
+
 export default function Fiado() {
-  async function getFiados() {
-    const data = await fetch("http://localhost:3000/fiados/", {
-      credentials: "include",
-    });
+  const [fiadoList, setFiadoList] = useState([]);
 
-    if (!data.ok) return "Não foi possível carregar os fiados";
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalExcluir, setModalExcluir] = useState(false);
 
-    return await data.json();
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [fiadoSelecionado, setFiadoSelecionado] = useState(null);
+
+  const [formulario, setFormulario] = useState(formularioInicial);
+
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+
+  const [erro, setErro] = useState("");
+
+  // =========================
+  // BUSCAR FIADOS
+  // =========================
+
+  async function carregarFiados() {
+    try {
+      setCarregando(true);
+      setErro("");
+
+      const res = await fetch(`${API_URL}/`, {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.mensagem || "Não foi possível carregar os fiados.",
+        );
+      }
+
+      setFiadoList(data);
+    } catch (error) {
+      setErro(error.message || "Erro ao carregar os fiados.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
-  async function criarFiado(novoFiado) {
-    const res = await fetch("http://localhost:3000/fiados/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(novoFiado),
-    });
+  useEffect(() => {
+    carregarFiados();
+  }, []);
 
-    const data = await res.json();
-    window.alert(data.mensagem);
+  // =========================
+  // ABRIR MODAL - CRIAÇÃO
+  // =========================
+
+  function abrirModalCriacao() {
+    setModoEdicao(false);
+    setFiadoSelecionado(null);
+    setFormulario(formularioInicial);
+    setErro("");
+    setModalAberto(true);
   }
 
-  async function editarFiado(fiadoParaEditar) {
-    const res = await fetch(
-      `http://localhost:3000/fiados/${fiadoParaEditar.id}`,
-      {
-        method: "PUT",
+  // =========================
+  // ABRIR MODAL - EDIÇÃO
+  // =========================
+
+  function abrirModalEdicao(item) {
+    setModoEdicao(true);
+    setFiadoSelecionado(item);
+
+    setFormulario({
+      nome: item.nome ?? "",
+      cpf: item.cpf ?? "",
+      valor: item.valor?.toString() ?? "",
+    });
+
+    setErro("");
+    setModalAberto(true);
+  }
+
+  // =========================
+  // FECHAR MODAL
+  // =========================
+
+  function fecharModal() {
+    if (salvando) return;
+
+    setModalAberto(false);
+    setFiadoSelecionado(null);
+    setFormulario(formularioInicial);
+    setErro("");
+  }
+
+  // =========================
+  // ALTERAR INPUT
+  // =========================
+
+  function alterarCampo(event) {
+    const { name, value } = event.target;
+
+    setFormulario((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  // =========================
+  // CRIAR / EDITAR FIADO
+  // =========================
+
+  async function salvarFiado(event) {
+    event.preventDefault();
+
+    setErro("");
+
+    if (!formulario.nome.trim()) {
+      setErro("O nome do cliente é obrigatório.");
+      return;
+    }
+
+    if (!modoEdicao && !formulario.cpf.trim()) {
+      setErro("O CPF do cliente é obrigatório.");
+      return;
+    }
+
+    if (formulario.valor === "" || Number(formulario.valor) < 0) {
+      setErro("Informe um valor válido.");
+      return;
+    }
+
+    if (!Number.isFinite(Number(formulario.valor))) {
+      setErro("O valor informado é inválido.");
+      return;
+    }
+
+    try {
+      setSalvando(true);
+
+      const url = modoEdicao
+        ? `${API_URL}/${fiadoSelecionado.id}`
+        : `${API_URL}/`;
+
+      const body = modoEdicao
+        ? {
+            id: fiadoSelecionado.id,
+            nome: formulario.nome.trim(),
+            valor: Number(formulario.valor),
+          }
+        : {
+            nome: formulario.nome.trim(),
+            cpf: formulario.cpf.trim(),
+            valor: formulario.valor,
+          };
+
+      const res = await fetch(url, {
+        method: modoEdicao ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include',
-        body: JSON.stringify(fiadoParaEditar),
-      },
-    );
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
 
-    const data = await res.json();
-    window.alert(data.mensagem);
-  }
+      const data = await res.json();
 
-  async function deletarFiado(fiadoParaDeletar) {
-    const res = await fetch(
-      `http://localhost:3000/fiados/${fiadoParaDeletar.id}`,
-      {
-        method: "DELETE",
-        credentials: 'include',
-      },
-    );
-
-    const data = await res.json();
-    window.alert(data.mensagem);
-  }
-
-  const [fiadoList, setFiadoList] = useState();
-  const [activeTab, setActiveTab] = useState("fiado");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
-  const [orderBy, setOrderBy] = useState("vencimento");
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    async function renderFiados() {
-      try {
-        const data = await getFiados();
-        setFiadoList(data);
-      } catch (e) {
-        console.log(e);
+      if (!res.ok) {
+        throw new Error(
+          data.mensagem || "Não foi possível salvar o fiado.",
+        );
       }
+
+      await carregarFiados();
+      fecharModal();
+    } catch (error) {
+      setErro(error.message || "Erro ao salvar o fiado.");
+    } finally {
+      setSalvando(false);
     }
+  }
 
-    renderFiados();
-  }, []);
+  // =========================
+  // ABRIR MODAL - EXCLUSÃO
+  // =========================
 
-  // Filtros dinâmicos e ordenação
-  // const filteredList = useMemo(() => {
-  //   let list = fiadoList?.filter((item) => {
-  //     const matchSearch =
-  //       item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
-  //     const matchStatus =
-  //       statusFilter === 'todos' || item.status === statusFilter;
-  //     return matchSearch && matchStatus;
-  //   });
+  function abrirModalExclusao(item) {
+    setFiadoSelecionado(item);
+    setErro("");
+    setModalExcluir(true);
+  }
 
-  // if (orderBy === 'vencimento') {
-  //   list.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  // } else if (orderBy === 'valor') {
-  //   list.sort((a, b) => b.totalDue - a.totalDue);
-  // } else if (orderBy === 'nome') {
-  //   list.sort((a, b) => a.nome.localeCompare(b.nome));
-  // }
+  // =========================
+  // FECHAR MODAL - EXCLUSÃO
+  // =========================
 
-  //   return list;
-  // }, [fiadoList, searchTerm, statusFilter, orderBy]);
+  function fecharModalExclusao() {
+    if (excluindo) return;
 
-  // const allSelected =
-  //   filteredList?.length > 0 &&
-  //   filteredList?.every((item) => selectedIds.includes(item.id));
+    setModalExcluir(false);
+    setFiadoSelecionado(null);
+    setErro("");
+  }
 
-  // const toggleSelectAll = () => {
-  //   if (allSelected) {
-  //     setSelectedIds([]);
-  //   } else {
-  //     setSelectedIds(filteredList?.map((item) => item.id));
-  //   }
-  // };
+  // =========================
+  // EXCLUIR FIADO
+  // =========================
 
-  // const toggleSelectOne = (id) => {
-  //   setSelectedIds((prev) =>
-  //     prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-  //   );
-  // };
+  async function deletarFiado() {
+    if (!fiadoSelecionado) return;
 
-  const handleDelete = (item) => {
-    if (window.confirm("Deseja remover este registro de fiado?")) {
-      deletarFiado(item);
+    try {
+      setExcluindo(true);
+      setErro("");
 
-      window.location.reload();
+      const res = await fetch(
+        `${API_URL}/${fiadoSelecionado.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.mensagem || "Não foi possível excluir o fiado.",
+        );
+      }
+
+      setFiadoList((prev) =>
+        prev.filter((item) => item.id !== fiadoSelecionado.id),
+      );
+
+      fecharModalExclusao();
+    } catch (error) {
+      setErro(error.message || "Erro ao excluir o fiado.");
+    } finally {
+      setExcluindo(false);
     }
-  };
+  }
 
-  const handleEdit = (item) => {
-    const novoNome = window.prompt("Editar nome do cliente:", item.nome);
-    if (!novoNome) return;
-    const novoValor = parseFloat(
-      window.prompt("Total devido (R$):", item.valor.toString()) ||
-        item.totalDue,
-    );
-
-    const fiadoParaEditar = {
-      id: item.id,
-      nome: novoNome,
-      valor: novoValor,
-    };
-
-    editarFiado(fiadoParaEditar);
-
-    window.location.reload();
-  };
-
-  const handleAddClient = () => {
-    const nome = window.prompt("Nome do cliente:");
-    if (!nome) return;
-    const cpf = window.prompt("Digite o cpf do cliente:");
-    if (!cpf) return;
-    const valor = window.prompt("Digite o valor:");
-    if (!valor) return;
-
-    const novoFiado = {
-      nome,
-      cpf,
-      valor,
-    };
-
-    criarFiado(novoFiado);
-
-    window.location.reload();
-  };
-
-  // const topTabs = [
-  //   { id: 'estoque', label: 'Gestão Estoque' },
-  //   { id: 'pedidos', label: 'Pedidos' },
-  //   { id: 'usuarios', label: 'Controle Usuários' },
-  //   { id: 'fiado', label: 'Controle Fiado' },
-  //   { id: 'cardapio', label: 'Controle Cardápio' },
-  // ];
+  // =========================
+  // TELA
+  // =========================
 
   return (
     <div className="p-4 flex flex-col gap-4">
-      {/* HEADER SUPERIOR */}
-      {/* <header className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
-        <div className="leading-none">
-          <span className="text-[10px] font-bold tracking-widest text-[#E67E22] block uppercase">
-            SGB
-          </span>
-          <span className="text-xl font-black tracking-tight text-[#E67E22] drop-shadow-sm uppercase">
-            MAGAIVER
-          </span>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="w-9 h-9 rounded-full bg-[#3F2618] flex items-center justify-center text-[#EADCC8] hover:opacity-90 transition"
-            aria-label="Notificações"
-          >
-            <Bell size={18} />
-          </button>
-          <div className="w-9 h-9 rounded-full bg-[#C85327] flex items-center justify-center text-white font-bold text-xs shadow-sm">
-            AD
-          </div>
-        </div>
-      </header> */}
+      {/* CABEÇALHO */}
 
-      {/* ABAS RÁPIDAS */}
-      {/* <div className="bg-[#EADCC8] px-3 py-2 flex items-center gap-2 overflow-x-auto border-b border-[#D8C7B0] no-scrollbar">
-        {topTabs?.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'bg-[#C85327] text-white shadow-sm'
-                : 'bg-[#FCF8F2] text-[#4A3525] border border-[#D8C7B0]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div> */}
-
-      {/* CONTEÚDO */}
-      {/* TÍTULO E BOTÃO ADICIONAR */}
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="flex items-baseline gap-2">
             <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
               Controle Fiado
             </h1>
+
             <span className="text-sm font-semibold text-gray-600">
-              / ({fiadoList?.length})
+              / ({fiadoList.length})
             </span>
           </div>
+
           <p className="text-xs text-gray-600 mt-0.5">
             Gestão de contas e recebimentos
           </p>
@@ -242,140 +280,252 @@ export default function Fiado() {
 
         <button
           type="button"
-          onClick={handleAddClient}
+          onClick={abrirModalCriacao}
           className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-4 py-2 rounded-xl text-xs flex flex-col items-center justify-center leading-tight shadow transition active:scale-95 whitespace-nowrap"
         >
+          <Plus size={16} />
           <span>Adicionar</span>
           <span>Fiado</span>
         </button>
       </div>
 
-      {/* FILTROS E BUSCA */}
-      {/* <div className="bg-[#EADCC8] p-3 rounded-2xl border border-[#D8C7B0] flex flex-col gap-3">
-          <div className="relative">
-            <span className="absolute -top-2.5 left-3 bg-[#EADCC8] px-1.5 text-xs font-mono font-medium text-[#4A3525]">
-              procure
-            </span>
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                placeholder="Nome do cliente ou documento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm text-[#1F1712] focus:outline-none focus:ring-2 focus:ring-[#C85327] placeholder-gray-500"
-              />
-              <Search className="absolute right-3 text-gray-600" size={18} />
-            </div>
-          </div>
+      {/* ERRO */}
 
-          <div className="grid grid-cols-2 gap-2">
-            <div className="relative">
-              <span className="absolute -top-2.5 left-2 bg-[#EADCC8] px-1 text-[10px] font-bold uppercase tracking-wider text-[#4A3525]">
-                STATUS
-              </span>
-              <div className="relative flex items-center">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full appearance-none bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2 text-sm text-[#1F1712] font-medium focus:outline-none focus:ring-2 focus:ring-[#C85327] cursor-pointer"
-                >
-                  <option value="todos">Todos</option>
-                  <option value="atrasado">Atrasado</option>
-                  <option value="pendente">Pendente</option>
-                  <option value="pago">Pago</option>
-                </select>
-                <ChevronDown className="absolute right-2.5 text-gray-600 pointer-events-none" size={16} />
-              </div>
-            </div>
+      {erro && !modalAberto && !modalExcluir && (
+        <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+          {erro}
+        </div>
+      )}
 
-            <div className="relative">
-              <span className="absolute -top-2.5 left-2 bg-[#EADCC8] px-1 text-[10px] font-bold uppercase tracking-wider text-[#4A3525]">
-                ORDENAR POR
-              </span>
-              <div className="relative flex items-center">
-                <select
-                  value={orderBy}
-                  onChange={(e) => setOrderBy(e.target.value)}
-                  className="w-full appearance-none bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2 text-sm text-[#1F1712] font-medium focus:outline-none focus:ring-2 focus:ring-[#C85327] cursor-pointer"
-                >
-                  <option value="vencimento">Vencimento</option>
-                  <option value="valor">Maior Valor</option>
-                  <option value="nome">Nome do Cliente</option>
-                </select>
-                <ChevronDown className="absolute right-2.5 text-gray-600 pointer-events-none" size={16} />
-              </div>
-            </div>
-          </div>
-        </div> */}
+      {/* CARREGANDO */}
 
-      {/* SELEÇÃO EM MASSA */}
-      {/* <div className="bg-[#EADCC8] px-3 py-2 rounded-xl flex items-center justify-between text-xs font-mono font-bold text-[#3B2314] border border-[#D8C7B0]">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={allSelected}
-              onChange={toggleSelectAll}
-              className="w-4 h-4 rounded border-[#3B2314] accent-[#C85327]"
+      {carregando ? (
+        <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-6 text-center text-sm text-gray-500">
+          Carregando fiados...
+        </div>
+      ) : fiadoList.length === 0 ? (
+        <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-8 text-center">
+          <p className="font-bold text-[#4A3525]">
+            Nenhum fiado cadastrado.
+          </p>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Use o botão Adicionar Fiado para cadastrar o primeiro.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {fiadoList.map((item) => (
+            <FiadoCard
+              key={item.id}
+              item={item}
+              onEdit={abrirModalEdicao}
+              onDelete={abrirModalExclusao}
             />
-            <span>Selecionar todos</span>
-          </label>
-          <span className="font-semibold text-gray-600">
-            Exibindo {filteredList?.length} de 2.948
-          </span>
-        </div> */}
-
-      {/* LISTA */}
-      <div className="flex flex-col gap-3">
-        {fiadoList?.map((item) => (
-          <FiadoCard
-            key={item.id}
-            item={item}
-            selected={selectedIds.includes(item.id)}
-            // onToggleSelect={toggleSelectOne}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
-
-        {/* {filteredList?.length === 0 && (
-            <div className="text-center py-10 text-gray-500 text-sm">
-              Nenhum cliente encontrado com os filtros selecionados.
-            </div>
-          )} */}
-      </div>
-
-      {/* PAGINAÇÃO */}
-      {/* <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1.5 rounded hover:bg-[#EADCC8] text-gray-700 transition"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          {[1, 2, 3, 4].map((pageNum) => (
-            <button
-              key={pageNum}
-              type="button"
-              onClick={() => setCurrentPage(pageNum)}
-              className={`w-7 h-7 text-xs font-bold rounded-lg flex items-center justify-center transition ${
-                currentPage === pageNum
-                  ? 'bg-[#1F1712] text-white'
-                  : 'hover:bg-[#EADCC8] text-gray-700'
-              }`}
-            >
-              {pageNum}
-            </button>
           ))}
-          <span className="text-xs text-gray-500 px-1 font-mono">...</span>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="p-1.5 rounded hover:bg-[#EADCC8] text-gray-700 transition"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div> */}
+        </div>
+      )}
+
+      {/* =========================
+          MODAL DE CADASTRO / EDIÇÃO
+      ========================= */}
+
+      {modalAberto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
+
+            {/* CABEÇALHO */}
+
+            <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-[#F39C12] font-bold">
+                  SGB MAGAIVER
+                </p>
+
+                <h2 className="font-black text-lg">
+                  {modoEdicao ? "Editar fiado" : "Novo fiado"}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={fecharModal}
+                disabled={salvando}
+                className="p-1.5 hover:bg-[#4A2D19] rounded-lg transition"
+                aria-label="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* FORMULÁRIO */}
+
+            <form
+              onSubmit={salvarFiado}
+              className="p-4 flex flex-col gap-4"
+            >
+
+              {/* ERRO */}
+
+              {erro && (
+                <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+                  {erro}
+                </div>
+              )}
+
+              {/* NOME */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Nome do cliente
+                </label>
+
+                <input
+                  name="nome"
+                  value={formulario.nome}
+                  onChange={alterarCampo}
+                  placeholder="Nome completo"
+                  autoFocus
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* CPF */}
+
+              {!modoEdicao && (
+                <div>
+                  <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                    CPF do cliente
+                  </label>
+
+                  <input
+                    name="cpf"
+                    value={formulario.cpf}
+                    onChange={alterarCampo}
+                    placeholder="Digite o CPF"
+                    className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                  />
+                </div>
+              )}
+
+              {/* VALOR */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Valor devido (R$)
+                </label>
+
+                <input
+                  type="number"
+                  name="valor"
+                  value={formulario.valor}
+                  onChange={alterarCampo}
+                  placeholder="0,00"
+                  min="0"
+                  step="0.01"
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* BOTÕES */}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#BFAFA0] text-[#4A3525] font-bold text-sm hover:bg-[#EADCC8] transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={salvando}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold text-sm transition disabled:opacity-50"
+                >
+                  {salvando
+                    ? "Salvando..."
+                    : modoEdicao
+                      ? "Salvar alterações"
+                      : "Cadastrar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================
+          MODAL DE EXCLUSÃO
+      ========================= */}
+
+      {modalExcluir && fiadoSelecionado && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
+
+            {/* CABEÇALHO */}
+
+            <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-[#F39C12] font-bold">
+                  SGB MAGAIVER
+                </p>
+
+                <h2 className="font-black text-lg">
+                  Excluir fiado
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={fecharModalExclusao}
+                disabled={excluindo}
+                className="p-1.5 hover:bg-[#4A2D19] rounded-lg transition"
+                aria-label="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* CONFIRMAÇÃO */}
+
+            <div className="p-4 flex flex-col gap-4">
+              {erro && (
+                <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+                  {erro}
+                </div>
+              )}
+
+              <p className="text-sm text-[#4A3525]">
+                Deseja realmente excluir o registro de fiado de{" "}
+                <strong>{fiadoSelecionado.nome}</strong>?
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={fecharModalExclusao}
+                  disabled={excluindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#BFAFA0] text-[#4A3525] font-bold text-sm hover:bg-[#EADCC8] transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={deletarFiado}
+                  disabled={excluindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition disabled:opacity-50"
+                >
+                  {excluindo ? "Excluindo..." : "Excluir"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -1,200 +1,311 @@
+
 import { useState, useMemo, useEffect } from "react";
-import {
-  Search,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-} from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { EstoqueCard } from "../components/EstoqueCard";
 
+const API_URL = "http://localhost:3000";
+
+const formularioInicial = {
+  nome: "",
+  quantidade: "",
+  idCategoria: "",
+  estoqueMinimo: "",
+};
+
 export default function Estoque() {
-  async function getEstoques() {
-    const dataEstoques = await fetch("http://localhost:3000/estoques/", {
-      credentials: "include",
+  const [estoques, setEstoques] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [modalAberto, setModalAberto] = useState(false);
+  const [modalExcluir, setModalExcluir] = useState(false);
+
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [estoqueSelecionado, setEstoqueSelecionado] = useState(null);
+
+  const [formulario, setFormulario] = useState(formularioInicial);
+
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState("");
+
+  // =========================
+  // BUSCAR ESTOQUES E CATEGORIAS
+  // =========================
+
+  async function carregarDados() {
+    try {
+      setCarregando(true);
+      setErro("");
+
+      const [resEstoques, resCategorias] = await Promise.all([
+        fetch(`${API_URL}/estoques/`, {
+          credentials: "include",
+        }),
+        fetch(`${API_URL}/categorias/`, {
+          credentials: "include",
+        }),
+      ]);
+
+      if (!resEstoques.ok) {
+        throw new Error("Não foi possível carregar os estoques.");
+      }
+
+      if (!resCategorias.ok) {
+        throw new Error("Não foi possível carregar as categorias.");
+      }
+
+      const dadosEstoques = await resEstoques.json();
+      const dadosCategorias = await resCategorias.json();
+
+      setCategorias(dadosCategorias);
+
+      const estoquesComCategorias = dadosEstoques.map((estoque) => ({
+        ...estoque,
+        categoria:
+          dadosCategorias.find(
+            (categoria) => categoria.id === estoque.idCategoria,
+          )?.nome ?? "Sem categoria",
+      }));
+
+      setEstoques(estoquesComCategorias);
+    } catch (error) {
+      setErro(error.message || "Erro ao carregar os dados.");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  useEffect(() => {
+    carregarDados();
+  }, []);
+
+  // =========================
+  // FILTRO
+  // =========================
+
+  const estoquesFiltrados = useMemo(() => {
+    const termo = searchTerm.trim().toLowerCase();
+
+    if (!termo) return estoques;
+
+    return estoques.filter((item) =>
+      item.nome.toLowerCase().includes(termo),
+    );
+  }, [estoques, searchTerm]);
+
+  // =========================
+  // ABRIR MODAL - CRIAÇÃO
+  // =========================
+
+  function abrirModalCriacao() {
+    setModoEdicao(false);
+    setEstoqueSelecionado(null);
+    setFormulario(formularioInicial);
+    setErro("");
+    setModalAberto(true);
+  }
+
+  // =========================
+  // ABRIR MODAL - EDIÇÃO
+  // =========================
+
+  function abrirModalEdicao(estoque) {
+    setModoEdicao(true);
+    setEstoqueSelecionado(estoque);
+
+    setFormulario({
+      nome: estoque.nome ?? "",
+      quantidade: estoque.quantidade ?? "",
+      idCategoria: estoque.idCategoria ?? "",
+      estoqueMinimo: estoque.estoqueMinimo ?? "",
     });
 
-    if (!dataEstoques.ok) return "Não foi possível carregar os estoques";
+    setErro("");
+    setModalAberto(true);
+  }
 
-    const dataCategorias = await fetch("http://localhost:3000/categorias/", {
-      credentials: "include",
-    });
+  // =========================
+  // FECHAR MODAL
+  // =========================
 
-    if (!dataCategorias.ok) console.log("Erro ao carregar categorias");
+  function fecharModal() {
+    if (salvando) return;
 
-    const estoques = await dataEstoques.json();
-    const categorias = await dataCategorias.json();
+    setModalAberto(false);
+    setEstoqueSelecionado(null);
+    setFormulario(formularioInicial);
+    setErro("");
+  }
 
-    const estoquesComCategorias = estoques.map((estoque) => ({
-      ...estoque,
-      categoria:
-        categorias.find((categoria) => categoria.id === estoque.idCategoria)
-          .nome ?? "Sem categoria",
+  // =========================
+  // ALTERAR INPUT
+  // =========================
+
+  function alterarCampo(event) {
+    const { name, value } = event.target;
+
+    setFormulario((prev) => ({
+      ...prev,
+      [name]: value,
     }));
-
-    return estoquesComCategorias;
   }
 
-  async function criarEstoque(novoEstoque) {
-    const res = await fetch("http://localhost:3000/estoques/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(novoEstoque),
-    });
+  // =========================
+  // CRIAR / EDITAR ESTOQUE
+  // =========================
 
-    const data = await res.json();
-    window.alert(data.mensagem);
-  }
+  async function salvarEstoque(event) {
+    event.preventDefault();
 
-  async function editarEstoque(estoqueParaEditar) {
-    const res = await fetch(
-      `http://localhost:3000/estoques/${estoqueParaEditar.id}`,
-      {
-        method: "PUT",
+    setErro("");
+
+    if (
+      !formulario.nome.trim() ||
+      formulario.quantidade === "" ||
+      !formulario.idCategoria ||
+      formulario.estoqueMinimo === ""
+    ) {
+      setErro("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (
+      Number(formulario.quantidade) < 0 ||
+      Number(formulario.estoqueMinimo) < 0
+    ) {
+      setErro("As quantidades não podem ser negativas.");
+      return;
+    }
+
+    try {
+      setSalvando(true);
+
+      const estoque = {
+        nome: formulario.nome.trim(),
+        quantidade: formulario.quantidade,
+        idCategoria: formulario.idCategoria,
+        estoqueMinimo: formulario.estoqueMinimo,
+      };
+
+      const url = modoEdicao
+        ? `${API_URL}/estoques/${estoqueSelecionado.id}`
+        : `${API_URL}/estoques/`;
+
+      const res = await fetch(url, {
+        method: modoEdicao ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(estoqueParaEditar),
-      },
-    );
+        body: JSON.stringify(
+          modoEdicao
+            ? { id: estoqueSelecionado.id, ...estoque }
+            : estoque,
+        ),
+      });
 
-    const data = await res.json();
-    window.alert(data.mensagem);
-  }
+      const data = await res.json();
 
-  async function deletarEstoque(estoqueParaDeletar) {
-    const res = await fetch(
-      `http://localhost:3000/estoques/${estoqueParaDeletar.id}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      },
-    );
-
-    const data = await res.json();
-    window.alert(data.mensagem);
-  }
-
-  const [estoques, setEstoques] = useState();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("todas");
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    async function renderEstoques() {
-      try {
-        const data = await getEstoques();
-        setEstoques(data);
-      } catch (e) {
-        console.log(e);
+      if (!res.ok) {
+        throw new Error(
+          data.mensagem || "Não foi possível salvar o estoque.",
+        );
       }
+
+      await carregarDados();
+      fecharModal();
+    } catch (error) {
+      setErro(error.message || "Erro ao salvar o estoque.");
+    } finally {
+      setSalvando(false);
     }
+  }
 
-    renderEstoques();
-  }, []);
+  // =========================
+  // ABRIR MODAL - EXCLUSÃO
+  // =========================
 
-  // const filteredProducts = useMemo(() => {
-  //   return products.filter((item) => {
-  //     const matchSearch =
-  //       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       item.cpf.toLowerCase().includes(searchTerm.toLowerCase());
-  //     const matchCategory =
-  //       selectedCategory === "todas" || item.category === selectedCategory;
-  //     return matchSearch && matchCategory;
-  //   });
-  // }, [products, searchTerm, selectedCategory]);
+  function abrirModalExclusao(estoque) {
+    setEstoqueSelecionado(estoque);
+    setErro("");
+    setModalExcluir(true);
+  }
 
-  // const allSelected =
-  //   filteredProducts.length > 0 &&
-  //   filteredProducts.every((p) => selectedIds.includes(p.id));
+  // =========================
+  // FECHAR MODAL - EXCLUSÃO
+  // =========================
 
-  // const toggleSelectAll = () => {
-  //   if (allSelected) setSelectedIds([]);
-  //   else setSelectedIds(filteredProducts.map((p) => p.id));
-  // };
+  function fecharModalExclusao() {
+    if (excluindo) return;
 
-  // const toggleSelectOne = (id) => {
-  //   setSelectedIds((prev) =>
-  //     prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-  //   );
-  // };
+    setModalExcluir(false);
+    setEstoqueSelecionado(null);
+    setErro("");
+  }
 
-  const handleDelete = (item) => {
-    if (window.confirm("Deseja remover este registro de estoque?")) {
-      deletarEstoque(item);
+  // =========================
+  // EXCLUIR ESTOQUE
+  // =========================
 
-      window.location.reload();
+  async function deletarEstoque() {
+    if (!estoqueSelecionado) return;
+
+    try {
+      setExcluindo(true);
+      setErro("");
+
+      const res = await fetch(
+        `${API_URL}/estoques/${estoqueSelecionado.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.mensagem || "Não foi possível excluir o estoque.",
+        );
+      }
+
+      setEstoques((prev) =>
+        prev.filter((item) => item.id !== estoqueSelecionado.id),
+      );
+
+      fecharModalExclusao();
+    } catch (error) {
+      setErro(error.message || "Erro ao excluir o estoque.");
+    } finally {
+      setExcluindo(false);
     }
-  };
+  }
 
-  const handleEdit = (item) => {
-    const novoNome = window.prompt("Editar o nome do produto:", item.nome);
-    if (!novoNome) return;
-    const novaQuantidade = window.prompt(
-      "Editar quantidade para estoque:",
-      item.quantidade,
-    );
-    if (!novaQuantidade) return;
-    const idCategoria = window.prompt("Id da categoria:", item.idCategoria);
-    if (!idCategoria) return;
-    const NovoEstoqueMinimo = window.prompt(
-      "Editar estoque mínimo:",
-      item.estoqueMinimo,
-    );
-    if (!NovoEstoqueMinimo) return;
-
-    const estoqueParaEditar = {
-      id: item.id,
-      nome: novoNome,
-      quantidade: novaQuantidade,
-      idCategoria,
-      estoqueMinimo: NovoEstoqueMinimo,
-    };
-
-    editarEstoque(estoqueParaEditar);
-
-    window.location.reload();
-  };
-
-  const handleAddProduct = () => {
-    const nome = window.prompt("Nome do produto:");
-    if (!nome) return;
-    const quantidade = window.prompt("Quantidade para estoque:");
-    if (!quantidade) return;
-    const idCategoria = window.prompt("Id da categoria:");
-    if (!idCategoria) return;
-    const estoqueMinimo = window.prompt("Estoque mínimo:");
-    if (!estoqueMinimo) return;
-
-    const novoEstoque = {
-      nome,
-      quantidade,
-      idCategoria,
-      estoqueMinimo,
-    };
-
-    criarEstoque(novoEstoque);
-
-    window.location.reload();
-  };
+  // =========================
+  // TELA
+  // =========================
 
   return (
     <div className="p-4 flex flex-col gap-4">
+
+      {/* CABEÇALHO */}
+
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="flex items-baseline gap-2">
             <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
               Inventário
             </h1>
+
             <span className="text-sm font-semibold text-gray-600">
-              / ({estoques?.length})
+              / ({estoques.length})
             </span>
           </div>
+
           <p className="text-xs text-gray-600 mt-0.5">
             Gestão de contas e recebimentos
           </p>
@@ -202,112 +313,292 @@ export default function Estoque() {
 
         <button
           type="button"
-          onClick={handleAddProduct}
+          onClick={abrirModalCriacao}
           className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-4 py-2 rounded-xl text-xs flex flex-col items-center justify-center leading-tight shadow transition active:scale-95 whitespace-nowrap"
         >
+          <Plus size={16} />
           <span>Adicionar</span>
           <span>produto</span>
         </button>
       </div>
 
-      {/* <div className="flex flex-col gap-3">
-        <div className="relative">
-          <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-bold text-[#4A3525]">
-            procure
-          </span>
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              placeholder="Nome ou código..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-lg px-3 py-2 text-sm text-[#1F1712] focus:outline-none focus:ring-2 focus:ring-[#C85327] placeholder-gray-500"
-            />
-            <Search className="absolute right-3 text-gray-600" size={18} />
-          </div>
-        </div>
+      {/* PESQUISA */}
 
-        <div className="relative">
-          <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-bold text-[#4A3525]">
-            pesquise categoria
-          </span>
-          <div className="relative flex items-center">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full appearance-none bg-[#E3D6C3] border border-[#BFAFA0] rounded-lg px-3 py-2 text-sm text-[#1F1712] font-medium focus:outline-none focus:ring-2 focus:ring-[#C85327] cursor-pointer"
-            >
-              <option value="todas">Todas as categorias</option>
-              <option value="bebida">bebida</option>
-              <option value="petisco">petisco</option>
-              <option value="alimento">alimento</option>
-              <option value="outros">outros</option>
-            </select>
-            <ChevronDown
-              className="absolute right-3 text-gray-600 pointer-events-none"
-              size={18}
-            />
-          </div>
-        </div>
-      </div> */}
-
-      {/* <div className="bg-[#EADCC8] px-3 py-2 rounded-lg flex items-center justify-between text-xs font-bold text-[#3B2314] border border-[#D8C7B0]">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            onChange={toggleSelectAll}
-            className="w-4 h-4 rounded border-[#3B2314] accent-[#C85327]"
-          />
-          <span>Selecionar Todos</span>
-        </label>
-        <span className="font-semibold text-gray-600">
-          Exibindo {estoques?.length} de {estoques?.length}
+      <div className="relative">
+        <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-mono font-medium text-[#4A3525] z-10">
+          procure
         </span>
-      </div> */}
 
-      <div className="flex flex-col gap-3">
-        {estoques?.map((estoque) => (
-          <EstoqueCard
-            key={estoque.id}
-            estoque={estoque}
-            // selected={selectedIds.includes(estoque.id)}
-            // onToggleSelect={toggleSelectOne}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            placeholder="Nome do produto..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 pr-10 text-sm text-[#1F1712] focus:outline-none focus:ring-2 focus:ring-[#C85327] placeholder-gray-500"
           />
-        ))}
-        {estoques?.length === 0 && (
-          <div className="text-center py-10 text-gray-500 text-sm">
-            Nenhum produto encontrado.
-          </div>
-        )}
+
+          <Search
+            className="absolute right-3 text-gray-600"
+            size={18}
+          />
+        </div>
       </div>
 
-      {/* <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
-        <button
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          className="p-1.5 rounded hover:bg-[#EADCC8] text-gray-700"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        {[1, 2, 3, 4, 5].map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => setCurrentPage(pageNum)}
-            className={`w-7 h-7 text-xs font-bold rounded flex items-center justify-center transition ${currentPage === pageNum ? "bg-[#1F1712] text-white" : "hover:bg-[#EADCC8] text-gray-700"}`}
-          >
-            {pageNum}
-          </button>
-        ))}
-        <span className="text-xs text-gray-500 px-1">...</span>
-        <button
-          onClick={() => setCurrentPage((p) => p + 1)}
-          className="p-1.5 rounded hover:bg-[#EADCC8] text-gray-700"
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div> */}
+      {/* ERRO */}
+
+      {erro && !modalAberto && !modalExcluir && (
+        <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+          {erro}
+        </div>
+      )}
+
+      {/* CARREGANDO */}
+
+      {carregando ? (
+        <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-6 text-center text-sm text-gray-500">
+          Carregando estoques...
+        </div>
+      ) : estoquesFiltrados.length === 0 ? (
+        <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-8 text-center">
+          <p className="font-bold text-[#4A3525]">
+            {searchTerm
+              ? "Nenhum produto encontrado."
+              : "Nenhum produto cadastrado."}
+          </p>
+
+          <p className="text-xs text-gray-500 mt-1">
+            Use o botão Adicionar produto para cadastrar o primeiro.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {estoquesFiltrados.map((estoque) => (
+            <EstoqueCard
+              key={estoque.id}
+              estoque={estoque}
+              onEdit={abrirModalEdicao}
+              onDelete={abrirModalExclusao}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* =========================
+          MODAL DE CADASTRO / EDIÇÃO
+      ========================= */}
+
+      {modalAberto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
+
+            {/* CABEÇALHO */}
+
+            <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-[#F39C12] font-bold">
+                  SGB MAGAIVER
+                </p>
+
+                <h2 className="font-black text-lg">
+                  {modoEdicao ? "Editar produto" : "Novo produto"}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={fecharModal}
+                disabled={salvando}
+                className="p-1.5 hover:bg-[#4A2D19] rounded-lg transition"
+                aria-label="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* FORMULÁRIO */}
+
+            <form
+              onSubmit={salvarEstoque}
+              className="p-4 flex flex-col gap-4"
+            >
+              {erro && (
+                <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+                  {erro}
+                </div>
+              )}
+
+              {/* NOME */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Nome do produto
+                </label>
+
+                <input
+                  name="nome"
+                  value={formulario.nome}
+                  onChange={alterarCampo}
+                  placeholder="Nome do produto"
+                  autoFocus
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* QUANTIDADE */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Quantidade em estoque
+                </label>
+
+                <input
+                  type="number"
+                  name="quantidade"
+                  min="0"
+                  value={formulario.quantidade}
+                  onChange={alterarCampo}
+                  placeholder="Quantidade"
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* CATEGORIA */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Categoria
+                </label>
+
+                <select
+                  name="idCategoria"
+                  value={formulario.idCategoria}
+                  onChange={alterarCampo}
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                >
+                  <option value="">Selecione uma categoria</option>
+
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* ESTOQUE MÍNIMO */}
+
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Estoque mínimo
+                </label>
+
+                <input
+                  type="number"
+                  name="estoqueMinimo"
+                  min="0"
+                  value={formulario.estoqueMinimo}
+                  onChange={alterarCampo}
+                  placeholder="Estoque mínimo"
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* BOTÕES */}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={fecharModal}
+                  disabled={salvando}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#BFAFA0] text-[#4A3525] font-bold text-sm hover:bg-[#EADCC8] transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={salvando}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold text-sm transition disabled:opacity-50"
+                >
+                  {salvando
+                    ? "Salvando..."
+                    : modoEdicao
+                      ? "Salvar alterações"
+                      : "Cadastrar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================
+          MODAL DE EXCLUSÃO
+      ========================= */}
+
+      {modalExcluir && estoqueSelecionado && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
+
+            <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-[#F39C12] font-bold">
+                  SGB MAGAIVER
+                </p>
+
+                <h2 className="font-black text-lg">
+                  Excluir produto
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={fecharModalExclusao}
+                disabled={excluindo}
+                className="p-1.5 hover:bg-[#4A2D19] rounded-lg transition"
+                aria-label="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-4 flex flex-col gap-4">
+              {erro && (
+                <div className="bg-red-100 border border-red-300 text-red-800 rounded-xl px-3 py-2 text-sm">
+                  {erro}
+                </div>
+              )}
+
+              <p className="text-sm text-[#4A3525]">
+                Deseja realmente excluir o produto{" "}
+                <strong>{estoqueSelecionado.nome}</strong>?
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={fecharModalExclusao}
+                  disabled={excluindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-[#BFAFA0] text-[#4A3525] font-bold text-sm hover:bg-[#EADCC8] transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={deletarEstoque}
+                  disabled={excluindo}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition disabled:opacity-50"
+                >
+                  {excluindo ? "Excluindo..." : "Excluir"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

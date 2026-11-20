@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, Boxes, CircleDollarSign } from "lucide-react";
+import {Menu, X, LogOut, Boxes, CircleDollarSign, Users} from "lucide-react";
 import { useAuth } from "../components/context/AuthContext";
 
 export function MainLayout() {
@@ -120,7 +120,7 @@ export function MainLayout() {
           <span>Pedidos</span>
         </NavLink> */}
 
-        {/* <NavLink
+        <NavLink
           to="/usuarios"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
@@ -128,7 +128,7 @@ export function MainLayout() {
         >
           <Users size={20} />
           <span>Usuários</span>
-        </NavLink> */}
+        </NavLink>
 
         <NavLink
           to="/fiados"
