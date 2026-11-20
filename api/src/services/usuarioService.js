@@ -1,5 +1,6 @@
 import prisma from "../infra/db/prisma.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { usuarioParse } from "../domain/usuarioDomain.js";
 
 async function listarUsuarios() {
@@ -82,10 +83,19 @@ async function loginUsuario(usuario, senha) {
             return null;
         }
 
+        const payload = {
+            id: usuarioEncontrado.id,
+            nome: usuarioEncontrado.nome
+        }
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "7d"
+        });
+
         // Não retorna o hash da senha
         const { senha: _, ...usuarioSemSenha } = usuarioEncontrado;
 
-        return usuarioSemSenha;
+        return { usuarioEncontrado: usuarioSemSenha, token};
 
     } catch (e) {
         throw "Erro ao realizar login";

@@ -10,11 +10,15 @@ import { EstoqueCard } from "../components/EstoqueCard";
 
 export default function Estoque() {
   async function getEstoques() {
-    const dataEstoques = await fetch("http://localhost:3000/estoques/");
+    const dataEstoques = await fetch("http://localhost:3000/estoques/", {
+      credentials: "include",
+    });
 
     if (!dataEstoques.ok) return "Não foi possível carregar os estoques";
 
-    const dataCategorias = await fetch("http://localhost:3000/categorias/");
+    const dataCategorias = await fetch("http://localhost:3000/categorias/", {
+      credentials: "include",
+    });
 
     if (!dataCategorias.ok) console.log("Erro ao carregar categorias");
 
@@ -37,6 +41,7 @@ export default function Estoque() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(novoEstoque),
     });
 
@@ -52,6 +57,7 @@ export default function Estoque() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(estoqueParaEditar),
       },
     );
@@ -65,6 +71,7 @@ export default function Estoque() {
       `http://localhost:3000/estoques/${estoqueParaDeletar.id}`,
       {
         method: "DELETE",
+        credentials: "include",
       },
     );
 

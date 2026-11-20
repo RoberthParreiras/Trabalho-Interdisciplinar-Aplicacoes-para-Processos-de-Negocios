@@ -1,7 +1,10 @@
 import express from "express";
 import { listarCategorias, getCategoria, criarCategoria, alterarCategoria, deletarCategoria } from "../services/categoriaService.js";
+import { autenticar } from "../infra/middleware/auth.js";
 
 const router = express.Router();
+router.use(autenticar);
+
 
 router.get('/', async (req, res) => {
     const categorias = await listarCategorias();

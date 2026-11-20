@@ -6,8 +6,10 @@ import {
   alterarFiado,
   deletarFiado,
 } from "../services/fiadoService.js";
+import { autenticar } from "../infra/middleware/auth.js";
 
 const router = express.Router();
+router.use(autenticar);
 
 router.get("/", async (req, res) => {
   const fiados = await listarFiados();

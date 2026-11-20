@@ -1,29 +1,31 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUsuario } = useAuth();
 
-  const [usuario, setUsuario] = useState('');
+  const [usuarioInput, setUsuarioInput] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
-
   async function handleLogin(e) {
     e.preventDefault();
-
+    
     setErro('');
     setCarregando(true);
-
+    
     try {
       const resposta = await fetch('http://localhost:3000/usuarios/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          usuario,
+          usuario: usuarioInput,
           senha,
         }),
       });
@@ -36,7 +38,8 @@ export default function Login() {
       }
 
       // Login realizado com sucesso
-      navigate('/estoque');
+      setUsuario(dados);
+      navigate('/estoques');
 
     } catch (error) {
       console.error('Erro ao realizar login:', error);
@@ -68,8 +71,8 @@ export default function Login() {
         <input
           type="text"
           placeholder="Usuário"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
+          value={usuarioInput}
+          onChange={(e) => setUsuarioInput(e.target.value)}
           required
           disabled={carregando}
           className="w-full h-[75px] rounded-[22px] bg-white border-2 border-[#C95B22] px-6 text-2xl text-gray-800 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-[#C95B22]"

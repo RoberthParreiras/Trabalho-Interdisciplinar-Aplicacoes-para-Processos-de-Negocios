@@ -1,26 +1,30 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { MainLayout } from './layouts/MainLayout';
-import Estoque from './pages/Estoque';
-import Fiado from './pages/Fiado';
-import Home from './pages/Home';
-import Login from './pages/Login';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { MainLayout } from "./layouts/MainLayout";
+import RotaProtegida from "./layouts/RotaProtegida";
+import { AuthProvider } from "../src/components/context/AuthContext";
+import Estoque from "./pages/Estoque";
+import Fiado from "./pages/Fiado";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Tela inicial */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Tela inicial */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Telas do sistema */}
-        <Route element={<MainLayout />}>
-          <Route path="/estoque" element={<Estoque />} />
-          <Route path="/fiado" element={<Fiado />} />
-        </Route>
-
-      </Routes>
-    </BrowserRouter>
+          {/* Telas do sistema protegidas*/}
+          <Route element={<RotaProtegida />}>
+            <Route element={<MainLayout />}>
+              <Route path="/estoques" element={<Estoque />} />
+              <Route path="/fiados" element={<Fiado />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

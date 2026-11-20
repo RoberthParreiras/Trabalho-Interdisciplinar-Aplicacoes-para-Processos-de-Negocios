@@ -10,7 +10,9 @@ import { FiadoCard } from "../components/FiadoCard";
 
 export default function Fiado() {
   async function getFiados() {
-    const data = await fetch("http://localhost:3000/fiados/");
+    const data = await fetch("http://localhost:3000/fiados/", {
+      credentials: "include",
+    });
 
     if (!data.ok) return "Não foi possível carregar os fiados";
 
@@ -23,6 +25,7 @@ export default function Fiado() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(novoFiado),
     });
 
@@ -38,6 +41,7 @@ export default function Fiado() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(fiadoParaEditar),
       },
     );
@@ -51,6 +55,7 @@ export default function Fiado() {
       `http://localhost:3000/fiados/${fiadoParaDeletar.id}`,
       {
         method: "DELETE",
+        credentials: 'include',
       },
     );
 
@@ -219,34 +224,34 @@ export default function Fiado() {
       </div> */}
 
       {/* CONTEÚDO */}
-        {/* TÍTULO E BOTÃO ADICIONAR */}
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
-                Controle Fiado
-              </h1>
-              <span className="text-sm font-semibold text-gray-600">
-                / ({fiadoList?.length})
-              </span>
-            </div>
-            <p className="text-xs text-gray-600 mt-0.5">
-              Gestão de contas e recebimentos
-            </p>
+      {/* TÍTULO E BOTÃO ADICIONAR */}
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-2xl font-black font-mono tracking-tight text-[#1F1712]">
+              Controle Fiado
+            </h1>
+            <span className="text-sm font-semibold text-gray-600">
+              / ({fiadoList?.length})
+            </span>
           </div>
-
-          <button
-            type="button"
-            onClick={handleAddClient}
-            className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-4 py-2 rounded-xl text-xs flex flex-col items-center justify-center leading-tight shadow transition active:scale-95 whitespace-nowrap"
-          >
-            <span>Adicionar</span>
-            <span>Fiado</span>
-          </button>
+          <p className="text-xs text-gray-600 mt-0.5">
+            Gestão de contas e recebimentos
+          </p>
         </div>
 
-        {/* FILTROS E BUSCA */}
-        {/* <div className="bg-[#EADCC8] p-3 rounded-2xl border border-[#D8C7B0] flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={handleAddClient}
+          className="bg-[#8AA639] hover:bg-[#78932F] text-[#1E2E06] font-bold px-4 py-2 rounded-xl text-xs flex flex-col items-center justify-center leading-tight shadow transition active:scale-95 whitespace-nowrap"
+        >
+          <span>Adicionar</span>
+          <span>Fiado</span>
+        </button>
+      </div>
+
+      {/* FILTROS E BUSCA */}
+      {/* <div className="bg-[#EADCC8] p-3 rounded-2xl border border-[#D8C7B0] flex flex-col gap-3">
           <div className="relative">
             <span className="absolute -top-2.5 left-3 bg-[#EADCC8] px-1.5 text-xs font-mono font-medium text-[#4A3525]">
               procure
@@ -303,8 +308,8 @@ export default function Fiado() {
           </div>
         </div> */}
 
-        {/* SELEÇÃO EM MASSA */}
-        {/* <div className="bg-[#EADCC8] px-3 py-2 rounded-xl flex items-center justify-between text-xs font-mono font-bold text-[#3B2314] border border-[#D8C7B0]">
+      {/* SELEÇÃO EM MASSA */}
+      {/* <div className="bg-[#EADCC8] px-3 py-2 rounded-xl flex items-center justify-between text-xs font-mono font-bold text-[#3B2314] border border-[#D8C7B0]">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -319,28 +324,28 @@ export default function Fiado() {
           </span>
         </div> */}
 
-        {/* LISTA */}
-        <div className="flex flex-col gap-3">
-          {fiadoList?.map((item) => (
-            <FiadoCard
-              key={item.id}
-              item={item}
-              selected={selectedIds.includes(item.id)}
-              // onToggleSelect={toggleSelectOne}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+      {/* LISTA */}
+      <div className="flex flex-col gap-3">
+        {fiadoList?.map((item) => (
+          <FiadoCard
+            key={item.id}
+            item={item}
+            selected={selectedIds.includes(item.id)}
+            // onToggleSelect={toggleSelectOne}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
 
-          {/* {filteredList?.length === 0 && (
+        {/* {filteredList?.length === 0 && (
             <div className="text-center py-10 text-gray-500 text-sm">
               Nenhum cliente encontrado com os filtros selecionados.
             </div>
           )} */}
-        </div>
+      </div>
 
-        {/* PAGINAÇÃO */}
-        {/* <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
+      {/* PAGINAÇÃO */}
+      {/* <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-xl p-2 flex items-center justify-center gap-2 shadow-sm my-2">
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
