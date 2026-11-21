@@ -325,7 +325,7 @@ export default function Estoque() {
       {/* PESQUISA */}
 
       <div className="relative">
-        <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-mono font-medium text-[#4A3525] z-10">
+        <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-mono rounded font-medium text-[#4A3525] z-10">
           procure
         </span>
 

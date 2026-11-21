@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from "react";
-import { Plus, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Plus, Search, X } from "lucide-react";
 import { FiadoCard } from "../components/FiadoCard";
 
 const API_URL = "http://localhost:3000/fiados";
@@ -16,6 +15,8 @@ export default function Fiado() {
 
   const [modalAberto, setModalAberto] = useState(false);
   const [modalExcluir, setModalExcluir] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [modoEdicao, setModoEdicao] = useState(false);
   const [fiadoSelecionado, setFiadoSelecionado] = useState(null);
@@ -60,6 +61,18 @@ export default function Fiado() {
   useEffect(() => {
     carregarFiados();
   }, []);
+
+  // =========================
+  // FILTRO
+  // =========================
+
+  const fiadosFiltrados = useMemo(() => {
+    const termo = searchTerm.trim().toLowerCase();
+
+    if (!termo) return fiadoList;
+
+    return fiadoList.filter((item) => item.nome.toLowerCase().includes(termo));
+  }, [fiadoList, searchTerm]);
 
   // =========================
   // ABRIR MODAL - CRIAÇÃO
@@ -177,9 +190,7 @@ export default function Fiado() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.mensagem || "Não foi possível salvar o fiado.",
-        );
+        throw new Error(data.mensagem || "Não foi possível salvar o fiado.");
       }
 
       await carregarFiados();
@@ -224,20 +235,15 @@ export default function Fiado() {
       setExcluindo(true);
       setErro("");
 
-      const res = await fetch(
-        `${API_URL}/${fiadoSelecionado.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`${API_URL}/${fiadoSelecionado.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(
-          data.mensagem || "Não foi possível excluir o fiado.",
-        );
+        throw new Error(data.mensagem || "Não foi possível excluir o fiado.");
       }
 
       setFiadoList((prev) =>
@@ -258,7 +264,6 @@ export default function Fiado() {
 
   return (
     <div className="p-4 flex flex-col gap-4">
-
       {/* CABEÇALHO */}
 
       <div className="flex items-center justify-between gap-2">
@@ -289,6 +294,26 @@ export default function Fiado() {
         </button>
       </div>
 
+      {/* PESQUISA */}
+
+      <div className="relative">
+        <span className="absolute -top-2.5 left-3 bg-[#F5EBD7] px-1.5 text-xs font-mono rounded font-medium text-[#4A3525] z-10">
+          procure
+        </span>
+
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            placeholder="Nome do cliente..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 pr-10 text-sm text-[#1F1712] focus:outline-none focus:ring-2 focus:ring-[#C85327] placeholder-gray-500"
+          />
+
+          <Search className="absolute right-3 text-gray-600" size={18} />
+        </div>
+      </div>
+
       {/* ERRO */}
 
       {erro && !modalAberto && !modalExcluir && (
@@ -303,11 +328,9 @@ export default function Fiado() {
         <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-6 text-center text-sm text-gray-500">
           Carregando fiados...
         </div>
-      ) : fiadoList.length === 0 ? (
+      ) : fiadosFiltrados.length === 0 ? (
         <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-8 text-center">
-          <p className="font-bold text-[#4A3525]">
-            Nenhum fiado cadastrado.
-          </p>
+          <p className="font-bold text-[#4A3525]">Nenhum fiado cadastrado.</p>
 
           <p className="text-xs text-gray-500 mt-1">
             Use o botão Adicionar Fiado para cadastrar o primeiro.
@@ -333,7 +356,6 @@ export default function Fiado() {
       {modalAberto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
-
             {/* CABEÇALHO */}
 
             <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
@@ -360,11 +382,7 @@ export default function Fiado() {
 
             {/* FORMULÁRIO */}
 
-            <form
-              onSubmit={salvarFiado}
-              className="p-4 flex flex-col gap-4"
-            >
-
+            <form onSubmit={salvarFiado} className="p-4 flex flex-col gap-4">
               {/* ERRO */}
 
               {erro && (
@@ -463,7 +481,6 @@ export default function Fiado() {
       {modalExcluir && fiadoSelecionado && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#FCF8F2] rounded-2xl border border-[#D8C7B0] shadow-2xl overflow-hidden">
-
             {/* CABEÇALHO */}
 
             <div className="bg-[#2E1A0F] text-[#F5EBD7] px-4 py-3 flex items-center justify-between">
@@ -472,9 +489,7 @@ export default function Fiado() {
                   SGB MAGAIVER
                 </p>
 
-                <h2 className="font-black text-lg">
-                  Excluir fiado
-                </h2>
+                <h2 className="font-black text-lg">Excluir fiado</h2>
               </div>
 
               <button
@@ -525,7 +540,6 @@ export default function Fiado() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
