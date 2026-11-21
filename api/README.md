@@ -6,7 +6,7 @@ Este guia explica como configurar, instalar e executar esta aplicação na sua m
 
 ```text
 api/                    # Backend (Express, Prisma ORM, autenticação JWT via cookie)
-├── prisma/             # Schema do banco de dados (schema.prisma)
+├── prisma/             # Schema do banco de dados (schema.prisma) e script de seed (seed.js)
 ├── src/
 │   ├── controllers/    # Rotas HTTP (categoria, estoque, fiado, itemComanda, usuario)
 │   ├── domain/         # Regras de domínio, validações e testes unitários
@@ -20,11 +20,9 @@ api/                    # Backend (Express, Prisma ORM, autenticação JWT via c
 
 Antes de começar, certifique-se de ter os seguintes itens instalados na sua máquina:
 
-* **Node.js** (v22 ou superior)
-
-* **npm** (já vem com o Node.js)
-
-* **Docker** e **Docker Compose** (para rodar o banco de dados MySQL localmente)
+- **Node.js** (v22 ou superior)
+- **npm** (já vem com o Node.js)
+- **Docker** e **Docker Compose** (para rodar o banco de dados MySQL localmente)
 
 ## 1. Configurando o Banco de Dados com Docker
 
@@ -35,7 +33,6 @@ Abra o terminal na raiz do projeto e execute:
 
 ```bash
 docker compose up -d
-
 ```
 
 *(A flag `-d` roda o contêiner em segundo plano, deixando o terminal livre).*
@@ -54,7 +51,6 @@ Instale as dependências do projeto usando o npm. Como configuramos um script `p
 
 ```bash
 npm install
-
 ```
 
 ## 4. Sincronizando o Schema do Banco de Dados
@@ -65,42 +61,47 @@ Execute o seguinte comando para aplicar o schema no banco de dados:
 
 ```bash
 npx prisma db push
-
 ```
 
 Após, execute o comando para gerar o novo prisma client com as informações do novo schema:
 
 ```bash
 npx prisma generate
-
 ```
 
 *(Nota: Se você estiver usando ativamente arquivos de migração para manter o histórico estrutural, use `npx prisma migrate dev` no lugar deste comando).*
 
-## 5. Rodando a Aplicação
+## 5. Populando o Banco de Dados (Seed)
+
+Para criar o usuário administrador inicial com a senha criptografada (`bcrypt`), execute o script de seed dentro da pasta `api/`:
+
+```bash
+node prisma/seed.js
+```
+
+## 6. Rodando a Aplicação
 
 Inicie o servidor de desenvolvimento local. A aplicação está configurada para rodar usando o modo watch (observação) nativo do Node.js e o carregador do arquivo `.env`.
 
 ```bash
 npm start
-
 ```
 
 *(Se você não tiver um script de start configurado, pode rodar diretamente: `node --env-file=.env --watch src/main.js`)*
 
 Seu servidor agora deve estar rodando e conectado com sucesso ao seu banco de dados MySQL no Docker!
 
->**Dica de Produtividade: Gerenciando o Banco de Dados no VS Code**
-> 
-> Para facilitar a visualização e manipulação das tabelas do MySQL diretamente no seu editor de código, sem precisar instalar programas pesados como o > MySQL Workbench ou DBeaver, recomendamos instalar as seguintes extensões no **Visual Studio Code**:
-> 
+> **Dica de Produtividade: Gerenciando o Banco de Dados no VS Code**
+>
+> Para facilitar a visualização e manipulação das tabelas do MySQL diretamente no seu editor de código, sem precisar instalar programas pesados como o MySQL Workbench ou DBeaver, recomendamos instalar as seguintes extensões no **Visual Studio Code**:
+>
 > 1. **Database Client**
 > 2. **Database Client JDBC**
-> 
+>
 > **Como usar:** Após a instalação, um ícone de banco de dados aparecerá na barra lateral esquerda do VS Code. Clique nele, crie uma nova conexão (selecione MySQL), insira as mesmas credenciais que você configurou no arquivo `.env` e clique em conectar. Você poderá ver as tabelas, editar dados e rodar queries (consultas) diretamente pelo VS Code!
 
 ## Comandos Úteis
 
-* **Parar o banco de dados:** `docker compose down`
-
-* **Regerar o Prisma Client:** `npx prisma generate` (Execute este comando sempre que você alterar seu arquivo `schema.prisma`)
+- **Parar o banco de dados:** `docker compose down`
+- **Regerar o Prisma Client:** `npx prisma generate` (Execute este comando sempre que você alterar seu arquivo `schema.prisma`)
+- **Criar usuário administrador (Seed):** `node prisma/seed.js`
