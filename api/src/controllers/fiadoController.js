@@ -40,6 +40,7 @@ router.post("/", async (req, res) => {
     nome: req.body.nome,
     cpf: req.body.cpf,
     valor: req.body.valor,
+    dataVencimento: req.body.dataVencimento,
   };
 
   const fiadoCriado = await criarFiado(fiado);
@@ -55,6 +56,7 @@ router.put("/:id", async (req, res) => {
     id: req.params.id,
     nome: req.body.nome,
     valor: req.body.valor,
+    dataVencimento: req.body.dataVencimento,
   };
 
   const fiadoAlterado = await alterarFiado(fiado);

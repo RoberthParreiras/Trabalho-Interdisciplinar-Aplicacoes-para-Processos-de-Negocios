@@ -8,7 +8,16 @@ const formularioInicial = {
   nome: "",
   cpf: "",
   valor: "",
+  dataVencimento: "",
 };
+
+function getHojeLocalISO() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate() + 1).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
 
 export default function Fiado() {
   const [fiadoList, setFiadoList] = useState([]);
@@ -52,6 +61,7 @@ export default function Fiado() {
 
       setFiadoList(data);
     } catch (error) {
+      console.log(error)
       setErro(error.message || "Erro ao carregar os fiados.");
     } finally {
       setCarregando(false);
@@ -79,6 +89,8 @@ export default function Fiado() {
   // =========================
 
   function abrirModalCriacao() {
+    const hoje = new Date().toISOString().slice(0, 10);
+
     setModoEdicao(false);
     setFiadoSelecionado(null);
     setFormulario(formularioInicial);
@@ -98,6 +110,9 @@ export default function Fiado() {
       nome: item.nome ?? "",
       cpf: item.cpf ?? "",
       valor: item.valor?.toString() ?? "",
+      dataVencimento: item.dataVencimento
+        ? String(item.dataVencimento).slice(0, 10)
+        : "",
     });
 
     setErro("");
@@ -154,6 +169,11 @@ export default function Fiado() {
       return;
     }
 
+    if (!formulario.dataVencimento) {
+      setErro("Informe a data de vencimento.");
+      return;
+    }
+
     if (!Number.isFinite(Number(formulario.valor))) {
       setErro("O valor informado é inválido.");
       return;
@@ -171,11 +191,13 @@ export default function Fiado() {
             id: fiadoSelecionado.id,
             nome: formulario.nome.trim(),
             valor: Number(formulario.valor),
+            dataVencimento: formulario.dataVencimento,
           }
         : {
             nome: formulario.nome.trim(),
             cpf: formulario.cpf.trim(),
             valor: formulario.valor,
+            dataVencimento: formulario.dataVencimento,
           };
 
       const res = await fetch(url, {
@@ -187,10 +209,9 @@ export default function Fiado() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.mensagem || "Não foi possível salvar o fiado.");
+        console.log(res)
+        throw new Error(res.erro || "Não foi possível salvar o fiado.");
       }
 
       await carregarFiados();
@@ -338,7 +359,7 @@ export default function Fiado() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {fiadoList.map((item) => (
+          {fiadosFiltrados.map((item) => (
             <FiadoCard
               key={item.id}
               item={item}
@@ -441,6 +462,22 @@ export default function Fiado() {
                   placeholder="0,00"
                   min="0"
                   step="0.01"
+                  className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
+                />
+              </div>
+
+              {/* DATA DE VENCIMENTO */}
+              <div>
+                <label className="block text-xs font-bold text-[#4A3525] mb-1">
+                  Data de vencimento
+                </label>
+
+                <input
+                  type="date"
+                  name="dataVencimento"
+                  min={getHojeLocalISO()}
+                  value={formulario.dataVencimento}
+                  onChange={alterarCampo}
                   className="w-full bg-[#E3D6C3] border border-[#BFAFA0] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C85327]"
                 />
               </div>

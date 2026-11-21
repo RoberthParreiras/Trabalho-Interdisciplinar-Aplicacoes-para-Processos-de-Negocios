@@ -1,48 +1,66 @@
-import React from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from "lucide-react";
 
-export function FiadoCard({
-  item,
-  selected,
-  onToggleSelect,
-  onEdit,
-  onDelete,
-}) {
-  const renderStatusBadge = (status) => {
-    switch (status) {
-      case 'atrasado':
-        return (
-          <span className="bg-[#EA3838] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-            Atrasado
-          </span>
-        );
-      case 'pendente':
-        return (
-          <span className="bg-[#E58E00] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-            Pendente
-          </span>
-        );
-      case 'pago':
-        return (
-          <span className="bg-[#1CB55C] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-            Pago
-          </span>
-        );
-      default:
-        return null;
+function formatarDataBR(dataVencimento) {
+  if (!dataVencimento) return "--/--/----";
+
+  const [ano, mes, dia] = String(dataVencimento).slice(0, 10).split("-");
+
+  if (!ano || !mes || !dia) return "--/--/----";
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+export function FiadoCard({ item, onEdit, onDelete }) {
+  const renderStatusBadge = (dataVencimento) => {
+
+    const dataVencimentoISO = new Date(
+      `${String(dataVencimento).slice(0, 10)}T00:00:00`,
+    );
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    if (hoje <= dataVencimentoISO) {
+      return (
+        <span className="bg-[#E58E00] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+          Pendente
+        </span>
+      );
+    } else if (hoje > dataVencimentoISO) {
+      return (
+        <span className="bg-[#EA3838] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+          Atrasado
+        </span>
+      );
     }
+
+    // switch (status) {
+    //   case "atrasado":
+    //     return (
+    //       <span className="bg-[#EA3838] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+    //         Atrasado
+    //       </span>
+    //     );
+    //   case "pendente":
+    //     return (
+    //       <span className="bg-[#E58E00] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+    //         Pendente
+    //       </span>
+    //     );
+    //   case "pago":
+    //     return (
+    //       <span className="bg-[#1CB55C] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+    //         Pago
+    //       </span>
+    //     );
+
+    return null;
   };
 
   return (
     <div className="bg-[#FCF8F2] border border-[#D8C7B0] rounded-2xl p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* <input
-            type="checkbox"
-            checked={selected}
-            onChange={() => onToggleSelect(item.id)}
-            className="w-5 h-5 rounded border-[#3B2314] accent-[#C85327] cursor-pointer"
-          /> */}
           <div>
             <h3 className="font-bold text-[#1F1712] text-lg font-mono leading-tight">
               {item.nome}
@@ -53,7 +71,7 @@ export function FiadoCard({
           </div>
         </div>
 
-        {/* <div>{renderStatusBadge(item.status)}</div> */}
+        <div>{renderStatusBadge(item.dataVencimento)}</div>
       </div>
 
       <div className="mt-3 pt-3 border-t border-[#F0E4D4] flex items-center justify-between">
@@ -63,17 +81,17 @@ export function FiadoCard({
               TOTAL DEVIDO
             </span>
             <span className="font-bold text-[#1F1712] text-base font-mono">
-              R$ {Number(item.valor).toFixed(2).replace('.', ',')}
+              R$ {Number(item.valor).toFixed(2).replace(".", ",")}
             </span>
           </div>
 
           <div>
-            {/* <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">
               VENCIMENTO
-            </span> */}
-            {/* <span className="font-semibold text-gray-800 text-sm font-mono">
-              {item.dueDate}
-            </span> */}
+            </span>
+            <span className="font-semibold text-gray-800 text-sm font-mono">
+              {formatarDataBR(item.dataVencimento)}
+            </span>
           </div>
         </div>
 

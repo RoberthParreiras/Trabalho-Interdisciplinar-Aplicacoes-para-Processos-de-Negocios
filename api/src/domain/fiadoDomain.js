@@ -1,11 +1,51 @@
 function fiadoParse(fiado) {
-    if (!validarCPF(fiado.cpf)) throw "CPF inválido";
+  if (!validarCPF(fiado.cpf)) throw "CPF inválido";
 
-    return fiado;
+  const dataVencimento = new Date(
+    `${String(fiado.dataVencimento).slice(0, 10)}T00:00:00`,
+  );
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(dataVencimento.getTime())) {
+    throw new Error("Data de vencimento inválida");
+  }
+
+  if (dataVencimento <= hoje) {
+    throw new Error("Data deve ser maior que a data atual");
+  }
+
+  return {
+    ...fiado,
+    dataVencimento,
+  };
+}
+
+function fiadoParseEditar(fiado) {
+  const dataVencimento = new Date(
+    `${String(fiado.dataVencimento).slice(0, 10)}T00:00:00`,
+  );
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(dataVencimento.getTime())) {
+    throw new Error("Data de vencimento inválida");
+  }
+
+  if (dataVencimento <= hoje) {
+    throw new Error("Data deve ser maior que a data atual");
+  }
+
+  return {
+    ...fiado,
+    dataVencimento,
+  };
 }
 
 function validarCPF(cpf) {
-  const limpo = String(cpf).replace(/\D/g, '');
+  const limpo = String(cpf).replace(/\D/g, "");
 
   if (limpo.length !== 11) {
     return false;
@@ -23,7 +63,7 @@ function validarCPF(cpf) {
   }
 
   let resto = (soma * 10) % 11;
-  const digito1 = (resto === 10 || resto === 11) ? 0 : resto;
+  const digito1 = resto === 10 || resto === 11 ? 0 : resto;
 
   if (digito1 !== parseInt(limpo.charAt(9), 10)) {
     return false;
@@ -34,11 +74,11 @@ function validarCPF(cpf) {
   for (let i = 0; i < 10; i++) {
     soma += parseInt(limpo.charAt(i), 10) * (11 - i);
   }
-  
+
   resto = (soma * 10) % 11;
-  const digito2 = (resto === 10 || resto === 11) ? 0 : resto;
+  const digito2 = resto === 10 || resto === 11 ? 0 : resto;
 
   return digito2 === parseInt(limpo.charAt(10), 10);
 }
 
-export { fiadoParse };
+export { fiadoParse, fiadoParseEditar };

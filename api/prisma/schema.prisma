@@ -27,6 +27,7 @@ model Fiado {
   nome            String   
   cpf             String   @unique
   valor           Decimal
+  dataVencimento  DateTime @map("data_vencimento")
   dataCriacao     DateTime @default(now()) @map("data_criacao")
   dataModificacao DateTime @updatedAt @map("data_modificacao")
 
