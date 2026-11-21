@@ -61,7 +61,6 @@ export default function Fiado() {
 
       setFiadoList(data);
     } catch (error) {
-      console.log(error)
       setErro(error.message || "Erro ao carregar os fiados.");
     } finally {
       setCarregando(false);
@@ -210,7 +209,6 @@ export default function Fiado() {
       });
 
       if (!res.ok) {
-        console.log(res)
         throw new Error(res.erro || "Não foi possível salvar o fiado.");
       }
 

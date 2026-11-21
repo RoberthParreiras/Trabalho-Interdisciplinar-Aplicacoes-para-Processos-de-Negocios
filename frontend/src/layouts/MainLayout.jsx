@@ -149,7 +149,7 @@ export function MainLayout() {
           {({ isActive }) => (
             <>
               <div
-                className={`${isActive ? "p-1.5 bg-[#4A2D19] rounded-xl text-[#E67E22]" : ""}`}
+                className={`${isActive ? "bg-[#4A2D19] rounded-lg text-[#E67E22]" : ""}`}
               >
                 <CircleDollarSign size={20} />
               </div>
