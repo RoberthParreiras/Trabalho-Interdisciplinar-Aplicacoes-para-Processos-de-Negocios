@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import {Menu, X, LogOut, Boxes, List, CircleDollarSign, Users} from "lucide-react";
+import {
+  Menu,
+  X,
+  LogOut,
+  Boxes,
+  List,
+  CircleDollarSign,
+  Users,
+  BookOpen,
+} from "lucide-react";
 import { useAuth } from "../components/context/AuthContext";
 
 export function MainLayout() {
@@ -158,15 +167,17 @@ export function MainLayout() {
           )}
         </NavLink>
 
-        {/* <NavLink
+        <NavLink
           to="/cardapio"
-          className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
-            isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
-          }`}
+          className={({ isActive }) =>
+            `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
+              isActive ? "text-[#E67E22]" : "text-gray-400 hover:text-white"
+            }`
+          }
         >
           <BookOpen size={20} />
           <span>Cardápio</span>
-        </NavLink> */}
+        </NavLink>
       </footer>
     </div>
   );

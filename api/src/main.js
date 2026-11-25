@@ -6,6 +6,7 @@ import fiadoRouter from "./controllers/fiadoController.js";
 import estoqueRouter from "./controllers/estoqueController.js";
 import usuarioRouter from "./controllers/usuarioController.js";
 import itemComandaRouter from "./controllers/itemComandaController.js";
+import cardapioRouter from "./controllers/cardapioController.js";
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use("/fiados", fiadoRouter);
 app.use("/estoques", estoqueRouter);
 app.use("/usuarios", usuarioRouter);
 app.use("/itens-comanda", itemComandaRouter);
+app.use("/cardapios", cardapioRouter);
 
 app.listen(3000, () => {
   console.log("Server running");
