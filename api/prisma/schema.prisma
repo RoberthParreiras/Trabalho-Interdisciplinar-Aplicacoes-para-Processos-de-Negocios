@@ -80,3 +80,12 @@ model ItemComanda {
 
   @@map("itens_comanda")
 }
+
+model Comanda {
+  id               String   @id @default(uuid())
+  numero_comanda   Int
+  status           String
+  data_criacao     DateTime @default(now())
+  data_modificacao DateTime @updatedAt
+  @@map("comanda")
+}
