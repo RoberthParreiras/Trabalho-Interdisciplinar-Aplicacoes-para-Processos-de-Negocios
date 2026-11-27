@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Usuarios from './pages/Usuarios';
 import Categoria from "./pages/Categoria";
 import Cardapio from "./pages/Cardapio";
+import ItensComanda from "./pages/ItensComanda";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
               <Route path="/usuarios" element={<Usuarios />} />
               <Route path="/fiados" element={<Fiado />} />
               <Route path="/cardapio" element={<Cardapio />} />
+              <Route path="/itens-comanda" element={<ItensComanda />} />
             </Route>
           </Route>
         </Routes>

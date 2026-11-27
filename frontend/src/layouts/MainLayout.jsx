@@ -9,6 +9,7 @@ import {
   CircleDollarSign,
   Users,
   BookOpen,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "../components/context/AuthContext";
 
@@ -127,15 +128,15 @@ export function MainLayout() {
           <span>Estoque</span>
         </NavLink>
 
-        {/* <NavLink
-          to="/pedidos"
+        <NavLink
+          to="/itens-comanda"
           className={({ isActive }) => `flex flex-col items-center gap-1 text-[11px] font-bold transition ${
             isActive ? 'text-[#E67E22]' : 'text-gray-400 hover:text-white'
           }`}
         >
           <ClipboardList size={20} />
-          <span>Pedidos</span>
-        </NavLink> */}
+          <span>Itens</span>
+        </NavLink>
 
         <NavLink
           to="/usuarios"
